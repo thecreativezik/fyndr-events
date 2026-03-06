@@ -381,7 +381,7 @@ function TechScene() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top top",
+        start: "top+=100px top",
         end: "+=150%",
         scrub: true,
         pin: true,
