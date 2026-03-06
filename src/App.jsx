@@ -265,7 +265,7 @@ function EventCard({ event, fallbackImage = imgFrame47 }) {
         <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
           <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[16px] text-zinc-800 text-ellipsis tracking-[-0.16px] w-full whitespace-nowrap">{event.title}</p>
           <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
-            <Status className="content-stretch flex items-start relative shrink-0" state={event.status} />
+            <Status className="content-stretch flex items-start relative shrink-0" state={getEventStatus(event)} />
             <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
               <div className="overflow-clip relative shrink-0 size-[12px]">
                 <div className="absolute inset-[8.33%_12.5%]">
@@ -330,13 +330,9 @@ function EventCard({ event, fallbackImage = imgFrame47 }) {
 
 function TrendingEvents({ events = [] }) {
   const featuredEvents = React.useMemo(() => {
-    const ranked = [...events].sort((a, b) => a.event_date.localeCompare(b.event_date));
-    return ranked.filter((event) => event.status !== "Ended").slice(0, 4);
+    const ranked = [...events].sort((a, b) => String(a.event_date || "").localeCompare(String(b.event_date || "")));
+    return ranked.filter((event) => getEventStatus(event) !== "Ended").slice(0, 4);
   }, [events]);
-
-  if (featuredEvents.length === 0) {
-    return null;
-  }
 
   const fallbackImages = [imgFrame47, imgFrame48, imgFrame49, imgFrame50];
 
@@ -349,9 +345,13 @@ function TrendingEvents({ events = [] }) {
           </p>
         </div>
         <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
-          {featuredEvents.map((event, index) => (
-            <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} />
-          ))}
+          {featuredEvents.length > 0 ? (
+            featuredEvents.map((event, index) => (
+              <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} />
+            ))
+          ) : (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">Trending events will appear once data is available.</p>
+          )}
         </div>
       </div>
     </div>
@@ -362,40 +362,51 @@ function TechScene() {
   const containerRef = useRef(null);
   const textRef = useRef(null);
 
+  const textLines = [
+    "All of Ghana’s tech scene in one place. ",
+    "From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet."
+  ];
+
   useEffect(() => {
     const el = textRef.current;
     if (!el) return;
 
-    // Split text into lines/words or just animate the existing spans
-    const spans = el.querySelectorAll('span');
+    // Word-by-word scrub animation setup
+    const words = el.querySelectorAll('.word');
     
-    // First span is fully visible
-    gsap.set(spans[0], { opacity: 1 });
-    // Rest of the text is slightly transparent initially
-    gsap.set([spans[1], spans[2]], { opacity: 0.2 });
+    // Set initial state: first part fully visible, rest transparent
+    gsap.set(words, { 
+      opacity: (index) => {
+        // Find how many words are in the first sentence to keep them visible
+        const firstSentenceWordCount = textLines[0].trim().split(" ").length;
+        return index < firstSentenceWordCount ? 1 : 0.2;
+      }
+    });
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top center", // Start animation when the top of the container hits the center of the viewport
-        end: "bottom center", // End animation when the bottom of the container hits the center of the viewport
-        scrub: 1, // Smooth scrubbing
-        toggleActions: "play none none reverse",
+        start: "top center", 
+        end: "+=400", // Control the scroll distance for the animation
+        scrub: 0.5, // Smooth scrubbing
       }
     });
 
-    tl.to([spans[1], spans[2]], {
+    // Animate only the words after the first sentence
+    const firstSentenceWordCount = textLines[0].trim().split(" ").length;
+    const wordsToAnimate = Array.from(words).slice(firstSentenceWordCount);
+
+    tl.to(wordsToAnimate, {
       opacity: 1,
-      duration: 1,
-      stagger: 0.2, // Animate spans sequentially
-      ease: "power1.inOut"
+      stagger: 0.1,
+      ease: "none",
     });
 
     return () => {
       tl.kill();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
-  }, []);
+  }, [textLines]);
 
   return (
     <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full">
@@ -448,10 +459,12 @@ function TechScene() {
             </div>
           </div>
           <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
-            <p ref={textRef} className="font-medium leading-[0] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content]">
-              <span className="leading-[60px] text-zinc-800 transition-opacity">All of Ghana’s tech scene in one place.</span>
-              <span className="leading-[60px] transition-opacity">{` `}</span>
-              <span className="leading-[60px] text-zinc-800 transition-opacity">From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.</span>
+            <p ref={textRef} className="font-medium leading-[60px] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content] flex flex-wrap justify-center gap-x-[12px]">
+              {textLines.join("").split(" ").map((word, index) => (
+                <span key={index} className="word transition-opacity duration-150">
+                  {word}
+                </span>
+              ))}
             </p>
           </div>
         </div>
@@ -564,6 +577,8 @@ const imgVectorAllEventsCal = "https://www.figma.com/api/mcp/asset/39a982ac-4275
 const imgVectorAllEventsSearch = "https://www.figma.com/api/mcp/asset/2493da36-6c76-432e-b323-d9b6d7a28f6b";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const TEG_SUPABASE_URL = (import.meta.env.VITE_TEG_SUPABASE_URL ?? "https://xvodlnzivmwthattilwr.supabase.co").replace(/\/$/, "");
+const TEG_SUPABASE_ANON_KEY = import.meta.env.VITE_TEG_SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2Rsbnppdm13dGhhdHRpbHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwMjMzNDUsImV4cCI6MjA2NTU5OTM0NX0.FFaTiUUAVAhjDeOkRyt7v4PlqzFJwlIu6VXZMXQgEDc";
 
 function buildApiUrl(path) {
   return `${API_BASE_URL}${path}`;
@@ -606,6 +621,128 @@ function getEventLocation(event) {
   return event.venue || event.location || event.platform || "Location TBA";
 }
 
+function parseDateTimeForStatus(dateText, timeText) {
+  if (!dateText) {
+    return null;
+  }
+  if (!timeText) {
+    const fallback = new Date(`${dateText}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  const match = String(timeText).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+  if (!match) {
+    const fallback = new Date(`${dateText}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  let hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2] ?? "0", 10);
+  const meridiem = match[3]?.toUpperCase();
+
+  if (meridiem === "AM" && hours === 12) {
+    hours = 0;
+  } else if (meridiem === "PM" && hours < 12) {
+    hours += 12;
+  }
+
+  const parsed = new Date(`${dateText}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getEventStatus(event) {
+  if (event?.status) {
+    return event.status;
+  }
+
+  const start = parseDateTimeForStatus(event?.event_date, event?.start_time);
+  const end = parseDateTimeForStatus(event?.event_date, event?.end_time ?? event?.start_time);
+  const now = new Date();
+
+  if (!start || !end) {
+    return "Upcoming";
+  }
+  if (now < start) {
+    return "Upcoming";
+  }
+  if (now > end) {
+    return "Ended";
+  }
+  return "Ongoing";
+}
+
+function normalizeSourceEvent(raw) {
+  const event = {
+    source_id: raw.id,
+    title: raw.title,
+    description: raw.description ?? raw.long_description ?? "",
+    long_description: raw.long_description ?? null,
+    event_date: raw.date ?? null,
+    start_time: raw.start_time ?? null,
+    end_time: raw.end_time ?? null,
+    location: raw.location ?? null,
+    venue: raw.venue ?? null,
+    location_type: raw.location_type ?? "physical",
+    platform: raw.platform ?? null,
+    location_link: raw.location_link ?? null,
+    ticket_type: raw.ticket_type ?? "free",
+    ticket_link: raw.ticket_link ?? null,
+    image_url: raw.image_url ?? null,
+    organizer_name: raw.is_external_organizer ? (raw.external_organizer_name ?? "Unknown Organizer") : (raw.organizer?.full_name ?? "Unknown Organizer"),
+    organizer_bio: raw.organizer?.bio ?? null,
+    organizer_profile_image_url: raw.organizer?.profile_image_url ?? null,
+    is_external_organizer: raw.is_external_organizer ? 1 : 0,
+    external_organizer_name: raw.external_organizer_name ?? null,
+    external_organizer_link: raw.external_organizer_link ?? null,
+    synced_at: new Date().toISOString(),
+  };
+  return { ...event, status: getEventStatus(event) };
+}
+
+async function fetchEventsFromSource() {
+  const select = [
+    "id",
+    "title",
+    "description",
+    "long_description",
+    "date",
+    "start_time",
+    "end_time",
+    "location",
+    "venue",
+    "location_type",
+    "platform",
+    "location_link",
+    "ticket_type",
+    "ticket_link",
+    "image_url",
+    "is_external_organizer",
+    "external_organizer_name",
+    "external_organizer_link",
+    "organizer:profiles(full_name,bio,profile_image_url)",
+  ].join(",");
+
+  const params = new URLSearchParams();
+  params.set("select", select);
+  params.set("order", "date.asc");
+  params.set("limit", "500");
+
+  const response = await fetch(`${TEG_SUPABASE_URL}/rest/v1/events?${params.toString()}`, {
+    headers: {
+      apikey: TEG_SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${TEG_SUPABASE_ANON_KEY}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Source request failed (${response.status})`);
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload.map(normalizeSourceEvent) : [];
+}
+
 function useEventFeed() {
   const [events, setEvents] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -613,6 +750,8 @@ function useEventFeed() {
   const [lastSyncedAt, setLastSyncedAt] = React.useState(null);
 
   const fetchEvents = React.useCallback(async () => {
+    let apiErrorMessage = "";
+
     try {
       const response = await fetch(buildApiUrl("/api/events?status=all&limit=500"));
       if (!response.ok) {
@@ -623,8 +762,20 @@ function useEventFeed() {
       setEvents(Array.isArray(payload.events) ? payload.events : []);
       setLastSyncedAt(payload?.latestSync?.finished_at ?? null);
       setError("");
+      return;
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Could not load events");
+      apiErrorMessage = fetchError instanceof Error ? fetchError.message : "Could not load local API events";
+    }
+
+    try {
+      const sourceEvents = await fetchEventsFromSource();
+      setEvents(sourceEvents);
+      setLastSyncedAt(new Date().toISOString());
+      setError("");
+    } catch (sourceError) {
+      const sourceMessage = sourceError instanceof Error ? sourceError.message : "Could not load source events";
+      setEvents([]);
+      setError(`${apiErrorMessage}. ${sourceMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -648,7 +799,7 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
 
   const filteredEvents = React.useMemo(() => {
     return events.filter((event) => {
-      const statusMatch = statusFilter === "All" || event.status === statusFilter;
+      const statusMatch = statusFilter === "All" || getEventStatus(event) === statusFilter;
       const search = searchTerm.trim().toLowerCase();
       if (!search) {
         return statusMatch;
