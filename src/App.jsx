@@ -14,8 +14,6 @@ const imgFrame50 = "https://www.figma.com/api/mcp/asset/c02d5e33-324e-4b0d-b51e-
 const imgVector1 = "https://www.figma.com/api/mcp/asset/bf683210-bd26-43b4-b07f-20c60f9277a5";
 const imgVector2 = "https://www.figma.com/api/mcp/asset/b2bbbf77-2406-4810-9828-02dabfb668a4";
 const imgVector3 = "https://www.figma.com/api/mcp/asset/60b219c8-e49b-4bd3-96e7-d3c29fab844d";
-const imgElements = "https://www.figma.com/api/mcp/asset/03eab964-1679-477f-96e8-2be98a65e4a9";
-
 const imgUnion = "https://www.figma.com/api/mcp/asset/3770e110-72cb-42f3-b41b-76860ce6b64a";
 const imgHeartHandFill = "https://www.figma.com/api/mcp/asset/62a9c907-77e7-4d20-b89e-9a67e75c61f7";
 const imgUnion1 = "https://www.figma.com/api/mcp/asset/e83e4534-e419-4d2c-8ae0-8c471f5833c8";
@@ -249,7 +247,6 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
   const ticketLabel = ticketType === "paid" ? "PAID" : "FREE";
   const ticketColor = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-800";
   const description = truncateText(event.description || event.long_description || "No description available", 120);
-  const registrationCount = getEventRegistrationCount(event);
   const handleClick = () => {
     if (typeof onClick === "function") {
       onClick(event);
@@ -258,7 +255,7 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
 
   return (
     <button
-      className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch cursor-pointer flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 text-left w-[288px]"
+      className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch cursor-pointer flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 text-left w-[288px] transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-[4px] hover:border-zinc-200 group"
       onClick={handleClick}
       type="button"
     >
@@ -266,10 +263,10 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
           <div className="absolute bg-zinc-100 inset-0" />
           <div className="absolute inset-0 overflow-hidden">
-            <img alt={event.title} className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover" src={event.image_url || fallbackImage} />
+            <img alt={event.title} className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" src={event.image_url || fallbackImage} />
           </div>
         </div>
-        <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[-22px] content-stretch cursor-pointer flex items-center justify-center opacity-0 p-[8px] right-[8px] rounded-full" />
+        <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[8px] content-stretch cursor-pointer flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-[8px] right-[8px] rounded-full" />
       </div>
       <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
         <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
@@ -310,21 +307,11 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
             {description}
           </p>
           <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
-            <div className={`${ticketColor} content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0`}>
-              <div className="relative shrink-0 size-[12px]">
-                <div className="absolute inset-[8.33%]">
-                  <div className="absolute inset-[-5%]">
-                    <img alt="" className="block max-w-none size-full" src={imgElements} />
-                  </div>
-                </div>
-              </div>
+            <div className={`${ticketColor} content-stretch flex gap-[4px] items-center px-[8px] py-[4px] relative rounded-[4px] shrink-0`}>
               <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] tracking-[0.072px] whitespace-nowrap">
                 {ticketLabel}
               </p>
             </div>
-            <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-              {formatRegistrationCountLabel(registrationCount)}
-            </p>
           </div>
         </div>
       </div>
@@ -400,9 +387,9 @@ function TechScene() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top+=100px top",
-        end: "+=200%",
-        scrub: true,
+        start: "top top",
+        end: "+=100%",
+        scrub: 0.3,
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
@@ -411,8 +398,8 @@ function TechScene() {
 
     tl.to(wordsToAnimate, {
       opacity: 1,
-      duration: 1,
-      stagger: 0.08,
+      duration: 0.5,
+      stagger: 0.05,
       ease: "none",
     });
 
@@ -669,14 +656,6 @@ function toSafeCount(value) {
   return parsed;
 }
 
-function formatRegistrationCountLabel(value) {
-  const count = toSafeCount(value);
-  if (count === 1) {
-    return "1 person registered";
-  }
-  return `${count.toLocaleString("en-US")} people registered`;
-}
-
 function getRegistrationCountFromRaw(raw) {
   return toSafeCount(
     raw.registration_count ??
@@ -724,6 +703,51 @@ function getRegistrationUrl(event) {
     }
   }
   return null;
+}
+
+function normalizeImageUrl(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  if (/^https?:\/\//i.test(trimmed) || /^data:image\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+  if (trimmed.startsWith("/")) {
+    return `${TEG_SUPABASE_URL}${trimmed}`;
+  }
+  if (/^www\./i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
+function getHostImageUrls(event) {
+  const candidates = [event?.organizer_profile_image_url, event?.host_profile_image_url, event?.organizer_image_url];
+  const hostImages = candidates
+    .flatMap((value) => {
+      if (!value) {
+        return [];
+      }
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value === "string") {
+        return value.split(",").map((item) => item.trim()).filter(Boolean);
+      }
+      return [];
+    })
+    .map(normalizeImageUrl)
+    .filter(Boolean);
+
+  return [...new Set(hostImages)].slice(0, 3);
 }
 
 function isPhysicalLocationEvent(event) {
@@ -1223,6 +1247,7 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
   const registrationUrl = getRegistrationUrl(event);
   const mapUrl = getEventMapUrl(event);
   const mapEmbedUrl = getEventMapEmbedUrl(event);
+  const hostImages = React.useMemo(() => getHostImageUrls(event), [event]);
   const longText = event.long_description || event.description || "Details will be published soon.";
   const descriptionBlocks = longText.split(/\n+/).filter(Boolean);
   const speakers = (event.organizer_name || "")
@@ -1267,11 +1292,15 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
                 {event.title}
               </p>
               <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-full">
-                <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
-                  <div className="bg-zinc-200 rounded-full size-[24px]" />
-                  <div className="bg-zinc-200 rounded-full size-[24px]" />
-                  <div className="bg-zinc-200 rounded-full size-[24px]" />
-                </div>
+                {hostImages.length > 0 ? (
+                  <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                    {hostImages.map((imageUrl, index) => (
+                      <div className="bg-zinc-100 overflow-hidden rounded-full size-[24px]" key={`${imageUrl}-${index}`}>
+                        <img alt={event.organizer_name || "Host"} className="h-full w-full object-cover" src={imageUrl} />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
                   Hosted by <span className="font-medium text-zinc-800">{event.organizer_name || "Unknown organizer"}</span>
                 </p>
@@ -1436,19 +1465,22 @@ function useSmoothScroll() {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smooth: true,
+      smoothWheel: true,
+      wheelMultiplier: 1,
     });
 
     lenis.on('scroll', ScrollTrigger.update);
 
-    gsap.ticker.add((time) => {
+    const raf = (time) => {
       lenis.raf(time * 1000);
-    });
+    };
+
+    gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      gsap.ticker.remove(raf);
       lenis.destroy();
-      gsap.ticker.remove(lenis.raf);
     };
   }, []);
 }
