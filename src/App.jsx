@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -248,6 +249,7 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
   const ticketLabel = ticketType === "paid" ? "PAID" : "FREE";
   const ticketColor = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-800";
   const description = truncateText(event.description || event.long_description || "No description available", 120);
+  const registrationCount = getEventRegistrationCount(event);
   const handleClick = () => {
     if (typeof onClick === "function") {
       onClick(event);
@@ -320,6 +322,9 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
                 {ticketLabel}
               </p>
             </div>
+            <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+              {formatRegistrationCountLabel(registrationCount)}
+            </p>
           </div>
         </div>
       </div>
@@ -329,8 +334,22 @@ function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
 
 function TrendingEvents({ events = [], onSelectEvent }) {
   const featuredEvents = React.useMemo(() => {
-    const ranked = [...events].sort((a, b) => String(a.event_date || "").localeCompare(String(b.event_date || "")));
-    return ranked.filter((event) => getEventStatus(event) !== "Ended").slice(0, 4);
+    const ranked = [...events]
+      .filter((event) => getEventStatus(event) !== "Ended")
+      .sort((a, b) => {
+        const registrationDiff = getEventRegistrationCount(b) - getEventRegistrationCount(a);
+        if (registrationDiff !== 0) {
+          return registrationDiff;
+        }
+
+        const dateDiff = String(a.event_date || "").localeCompare(String(b.event_date || ""));
+        if (dateDiff !== 0) {
+          return dateDiff;
+        }
+
+        return String(a.title || "").localeCompare(String(b.title || ""));
+      });
+    return ranked.slice(0, 4);
   }, [events]);
 
   const fallbackImages = [imgFrame47, imgFrame48, imgFrame49, imgFrame50];
@@ -382,7 +401,7 @@ function TechScene() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top+=100px top",
-        end: "+=150%",
+        end: "+=200%",
         scrub: true,
         pin: true,
         pinSpacing: true,
@@ -642,6 +661,108 @@ function formatEventTime(startTime, endTime) {
   return startTime || endTime;
 }
 
+function toSafeCount(value) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return parsed;
+}
+
+function formatRegistrationCountLabel(value) {
+  const count = toSafeCount(value);
+  if (count === 1) {
+    return "1 person registered";
+  }
+  return `${count.toLocaleString("en-US")} people registered`;
+}
+
+function getRegistrationCountFromRaw(raw) {
+  return toSafeCount(
+    raw.registration_count ??
+      raw.registrations_count ??
+      raw.registered_count ??
+      raw.attendee_count ??
+      raw.attendees_count ??
+      raw.total_registrations ??
+      0,
+  );
+}
+
+function getEventRegistrationCount(event) {
+  return toSafeCount(event?.registration_count ?? event?.registrations_count ?? 0);
+}
+
+function normalizeExternalUrl(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^www\./i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return null;
+}
+
+function getRegistrationUrl(event) {
+  const candidates = [event?.ticket_link, event?.registration_link, event?.external_organizer_link];
+  for (const candidate of candidates) {
+    const normalized = normalizeExternalUrl(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+function isPhysicalLocationEvent(event) {
+  const locationType = String(event?.location_type ?? "physical").trim().toLowerCase();
+  return ["physical", "in_person", "in-person", "onsite", "on_site"].includes(locationType);
+}
+
+function buildGoogleMapsSearchUrl(query) {
+  if (!query) {
+    return null;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function getEventMapUrl(event) {
+  if (!isPhysicalLocationEvent(event)) {
+    return null;
+  }
+
+  const normalizedLocationLink = normalizeExternalUrl(event?.location_link);
+  if (normalizedLocationLink) {
+    return normalizedLocationLink;
+  }
+
+  const mapQuery = [event?.venue, event?.location].filter(Boolean).join(", ");
+  return buildGoogleMapsSearchUrl(mapQuery || "Accra, Ghana");
+}
+
+function getEventMapEmbedUrl(event) {
+  if (!isPhysicalLocationEvent(event)) {
+    return null;
+  }
+  const mapQuery = [event?.venue, event?.location].filter(Boolean).join(", ");
+  if (!mapQuery) {
+    return null;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+}
+
 function truncateText(text, maxLength) {
   if (!text || text.length <= maxLength) {
     return text;
@@ -726,32 +847,13 @@ function normalizeSourceEvent(raw) {
     is_external_organizer: raw.is_external_organizer ? 1 : 0,
     external_organizer_name: raw.external_organizer_name ?? null,
     external_organizer_link: raw.external_organizer_link ?? null,
+    registration_count: getRegistrationCountFromRaw(raw),
     synced_at: new Date().toISOString(),
   };
   return { ...event, status: getEventStatus(event) };
 }
 
-const SOURCE_SELECT_FIELDS = [
-  "id",
-  "title",
-  "description",
-  "long_description",
-  "date",
-  "start_time",
-  "end_time",
-  "location",
-  "venue",
-  "location_type",
-  "platform",
-  "location_link",
-  "ticket_type",
-  "ticket_link",
-  "image_url",
-  "is_external_organizer",
-  "external_organizer_name",
-  "external_organizer_link",
-  "organizer:profiles(full_name,bio,profile_image_url)",
-].join(",");
+const SOURCE_SELECT_FIELDS = "*,organizer:profiles(full_name,bio,profile_image_url)";
 
 function getSourceHeaders() {
   return {
@@ -1118,7 +1220,9 @@ function NearbyEventCard({ event, onClick }) {
 
 function EventDetailPage({ event, events, onBack, onSelectEvent }) {
   const [galleryIndex, setGalleryIndex] = React.useState(0);
-  const registrationUrl = event.ticket_link || event.location_link || null;
+  const registrationUrl = getRegistrationUrl(event);
+  const mapUrl = getEventMapUrl(event);
+  const mapEmbedUrl = getEventMapEmbedUrl(event);
   const longText = event.long_description || event.description || "Details will be published soon.";
   const descriptionBlocks = longText.split(/\n+/).filter(Boolean);
   const speakers = (event.organizer_name || "")
@@ -1215,8 +1319,8 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
                     {event.location || "Accra, Ghana"}
                   </p>
                 </div>
-                {registrationUrl ? (
-                  <a className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 whitespace-nowrap" href={registrationUrl} rel="noreferrer" target="_blank">
+                {mapUrl ? (
+                  <a className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 whitespace-nowrap" href={mapUrl} rel="noreferrer" target="_blank">
                     ↗
                   </a>
                 ) : null}
@@ -1259,26 +1363,39 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
             </div>
           </div>
 
-          <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
-            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
-              Location
-            </p>
-            {event.location_link ? (
-              <iframe
-                className="border border-zinc-200 h-[220px] rounded-[12px] w-full"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                src={event.location_link}
-                title="Event location map"
-              />
-            ) : (
-              <div className="bg-zinc-100 border border-zinc-200 content-stretch flex h-[220px] items-center justify-center rounded-[12px] w-full">
-                <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
-                  Location map not available
-                </p>
-              </div>
-            )}
-          </div>
+          {mapUrl ? (
+            <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
+              <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+                Location
+              </p>
+              <a
+                aria-label={`Open ${getEventLocation(event)} in Google Maps`}
+                className="block overflow-hidden relative rounded-[12px] w-full"
+                href={mapUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {mapEmbedUrl ? (
+                  <iframe
+                    className="border border-zinc-200 h-[220px] pointer-events-none rounded-[12px] w-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={mapEmbedUrl}
+                    title="Event location map"
+                  />
+                ) : (
+                  <div className="bg-zinc-100 border border-zinc-200 content-stretch flex h-[220px] items-center justify-center rounded-[12px] w-full">
+                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                      Open in Google Maps
+                    </p>
+                  </div>
+                )}
+                <div className="absolute bottom-[12px] right-[12px] bg-white/90 border border-zinc-200 px-[10px] py-[6px] rounded-full">
+                  <p className="font-medium leading-none not-italic text-[12px] text-zinc-700 whitespace-nowrap">Open in Google Maps</p>
+                </div>
+              </a>
+            </div>
+          ) : null}
 
           <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
             <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
@@ -1314,7 +1431,30 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
   );
 }
 
+function useSmoothScroll() {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove(lenis.raf);
+    };
+  }, []);
+}
+
 export default function App() {
+  useSmoothScroll();
   const { events, isLoading, error, lastSyncedAt } = useEventFeed();
   const [activeEventId, setActiveEventId] = React.useState(() => (typeof window === "undefined" ? null : getEventIdFromPath(window.location.pathname)));
   const { event: activeEvent, isLoading: isEventDetailLoading, error: eventDetailError } = useEventDetail(activeEventId, events);

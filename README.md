@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# Fyndr Events
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Fyndr now uses a local database-backed event feed that automatically syncs with [Tech Event Ghana](https://www.techeventghana.com/).
 
-Currently, two official plugins are available:
+## What this setup does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Stores events in a local SQLite database (`data/events.db`)
+- Syncs events from Tech Event Ghana into local storage on startup
+- Auto-syncs on an interval (default: every 30 minutes)
+- Serves events through a local API (`/api/events`)
+- Renders event cards in the React UI from database-backed API data (no hardcoded cards)
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Frontend: React + Vite
+- API: Express
+- Database: SQLite (`better-sqlite3`)
 
-## Expanding the ESLint configuration
+## Run locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Install dependencies:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Start frontend + API together:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+- Web app: `http://localhost:5173`
+- API: `http://localhost:8787`
+
+## Useful scripts
+
+- `npm run dev` — runs API + frontend together
+- `npm run dev:api` — runs API only with watch mode
+- `npm run dev:web` — runs Vite frontend only
+- `npm run start:api` — runs API only (no watch)
+- `npm run sync:events` — manually trigger event sync via API
+
+## Environment variables
+
+Copy `.env.example` to `.env` and adjust values if needed.
+
+- `PORT` — API port (default `8787`)
+- `DB_PATH` — SQLite DB path (default `data/events.db`)
+- `SYNC_INTERVAL_MINUTES` — periodic sync interval (default `30`)
+- `AUTO_SYNC` — set to `false` to disable scheduled syncing
+- `TEG_SUPABASE_URL` — override source URL
+- `TEG_SUPABASE_ANON_KEY` — override source anon key
+
+## API endpoints
+
+- `GET /api/health` — basic health + latest sync metadata
+- `GET /api/events?status=all|upcoming|ongoing|ended&q=...&limit=...` — fetch events
+- `POST /api/sync` — manually run importer
+
