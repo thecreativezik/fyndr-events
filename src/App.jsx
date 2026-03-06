@@ -227,7 +227,7 @@ function Status({ className, state = "Ongoing" }) {
 
 function SaveBtn({ className, property1 = "Default" }) {
   return (
-    <button className={className || "backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] content-stretch flex items-center justify-center p-[8px] relative rounded-full"}>
+    <div className={className || "backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] content-stretch flex items-center justify-center p-[8px] relative rounded-full"}>
       <div className="overflow-clip relative shrink-0 size-[20px]">
         <div className="absolute inset-[12.5%_20.83%]">
           <div className="absolute inset-[-3.81%_-4.9%]">
@@ -235,11 +235,11 @@ function SaveBtn({ className, property1 = "Default" }) {
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
-function EventCard({ event, fallbackImage = imgFrame47 }) {
+function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
   if (!event) {
     return null;
   }
@@ -248,10 +248,18 @@ function EventCard({ event, fallbackImage = imgFrame47 }) {
   const ticketLabel = ticketType === "paid" ? "PAID" : "FREE";
   const ticketColor = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-800";
   const description = truncateText(event.description || event.long_description || "No description available", 120);
-  const locationLabel = getEventLocation(event);
+  const handleClick = () => {
+    if (typeof onClick === "function") {
+      onClick(event);
+    }
+  };
 
   return (
-    <div className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 w-[288px]">
+    <button
+      className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch cursor-pointer flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 text-left w-[288px]"
+      onClick={handleClick}
+      type="button"
+    >
       <div className="h-[288px] overflow-clip relative shrink-0 w-full">
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
           <div className="absolute bg-zinc-100 inset-0" />
@@ -293,22 +301,13 @@ function EventCard({ event, fallbackImage = imgFrame47 }) {
           </div>
         </div>
         <div className="content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
-          <p className="font-normal leading-[22px] min-w-full not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]">
+          <p
+            className="font-normal h-[66px] leading-[22px] min-w-full not-italic overflow-hidden relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]"
+            style={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 3, display: "-webkit-box" }}
+          >
             {description}
           </p>
           <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
-            <div className="bg-zinc-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
-              <div className="overflow-clip relative shrink-0 size-[12px]">
-                <div className="absolute inset-[8.33%_16.67%]">
-                  <div className="absolute inset-[-5.71%_-7.14%]">
-                    <img alt="" className="block max-w-none size-full" src={imgVector3} />
-                  </div>
-                </div>
-              </div>
-              <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                {locationLabel}
-              </p>
-            </div>
             <div className={`${ticketColor} content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0`}>
               <div className="relative shrink-0 size-[12px]">
                 <div className="absolute inset-[8.33%]">
@@ -324,11 +323,11 @@ function EventCard({ event, fallbackImage = imgFrame47 }) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function TrendingEvents({ events = [] }) {
+function TrendingEvents({ events = [], onSelectEvent }) {
   const featuredEvents = React.useMemo(() => {
     const ranked = [...events].sort((a, b) => String(a.event_date || "").localeCompare(String(b.event_date || "")));
     return ranked.filter((event) => getEventStatus(event) !== "Ended").slice(0, 4);
@@ -347,7 +346,7 @@ function TrendingEvents({ events = [] }) {
         <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
           {featuredEvents.length > 0 ? (
             featuredEvents.map((event, index) => (
-              <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} />
+              <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} onClick={onSelectEvent} />
             ))
           ) : (
             <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">Trending events will appear once data is available.</p>
@@ -411,7 +410,7 @@ function TechScene() {
   }, [textLines]);
 
   return (
-    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full min-h-screen">
+    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full min-h-screen mb-[400px]">
       <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px] m-auto">
         <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
           <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
@@ -599,6 +598,43 @@ function formatEventDate(dateText) {
   return parsed.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+  });
+}
+
+function formatMonthLabel(dateText) {
+  if (!dateText) {
+    return "TBA";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "TBA";
+  }
+  return parsed.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+}
+
+function formatDayLabel(dateText) {
+  if (!dateText) {
+    return "--";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "--";
+  }
+  return String(parsed.getDate());
+}
+
+function formatEventWeekdayDate(dateText) {
+  if (!dateText) {
+    return "Date TBA";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateText;
+  }
+  return parsed.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
   });
 }
 
@@ -794,7 +830,7 @@ function useEventFeed() {
   return { events, isLoading, error, lastSyncedAt };
 }
 
-function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = null }) {
+function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = null, onSelectEvent }) {
   const [statusFilter, setStatusFilter] = React.useState("All");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [visibleCount, setVisibleCount] = React.useState(8);
@@ -902,6 +938,7 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
                 event={event}
                 fallbackImage={[imgFrame47, imgFrame48, imgFrame49, imgFrame50][index % 4]}
                 key={event.source_id}
+                onClick={onSelectEvent}
               />
             ))}
           </div>
@@ -924,17 +961,333 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
   );
 }
 
+function toEventPath(eventId) {
+  return `/event/${encodeURIComponent(eventId)}`;
+}
+
+function getEventIdFromPath(pathname) {
+  if (!pathname) {
+    return null;
+  }
+  const match = pathname.match(/^\/event\/([^/]+)$/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function NearbyEventCard({ event, onClick }) {
+  const ticketType = (event.ticket_type || "free").toLowerCase();
+  const ticketClass = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700";
+
+  return (
+    <button
+      className="bg-white border border-zinc-100 content-stretch cursor-pointer flex gap-[10px] items-start p-[10px] relative rounded-[12px] shrink-0 text-left w-[288px]"
+      onClick={() => onClick(event)}
+      type="button"
+    >
+      <div className="h-[90px] overflow-clip relative rounded-[8px] shrink-0 w-[90px]">
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div className="absolute bg-zinc-100 inset-0" />
+          <img alt={event.title} className="absolute inset-0 object-cover size-full" src={event.image_url || imgFrame49} />
+        </div>
+      </div>
+      <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-start min-h-px min-w-px relative">
+        <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[12px] text-zinc-800 text-ellipsis tracking-[-0.12px] w-full whitespace-nowrap">
+          {event.title}
+        </p>
+        <p className="font-normal leading-[16px] not-italic overflow-hidden relative shrink-0 text-[11px] text-zinc-500 tracking-[0.06px] w-full" style={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 2, display: "-webkit-box" }}>
+          {truncateText(event.description || event.long_description || "No description available", 70)}
+        </p>
+        <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+          <Status className="content-stretch flex items-start relative shrink-0" state={getEventStatus(event)} />
+          <p className="font-normal leading-[14px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.06px] whitespace-nowrap">
+            {formatEventDate(event.event_date)}
+          </p>
+        </div>
+        <div className={`${ticketClass} content-stretch flex gap-[4px] items-center px-[8px] py-[4px] relative rounded-full shrink-0`}>
+          <p className="font-medium leading-[14px] not-italic relative shrink-0 text-[10px] tracking-[0.06px] whitespace-nowrap">
+            {ticketType === "paid" ? "PAID" : "FREE"}
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function EventDetailPage({ event, events, onBack, onSelectEvent }) {
+  const [galleryIndex, setGalleryIndex] = React.useState(0);
+  const registrationUrl = event.ticket_link || event.location_link || null;
+  const longText = event.long_description || event.description || "Details will be published soon.";
+  const descriptionBlocks = longText.split(/\n+/).filter(Boolean);
+  const speakers = (event.organizer_name || "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  const relatedEvents = React.useMemo(() => {
+    const sameArea = events.filter((item) => item.source_id !== event.source_id && (item.location === event.location || item.venue === event.venue));
+    if (sameArea.length >= 4) {
+      return sameArea.slice(0, 4);
+    }
+    const fallback = events.filter((item) => item.source_id !== event.source_id);
+    return [...sameArea, ...fallback].slice(0, 4);
+  }, [event, events]);
+
+  const galleryImages = [event.image_url || imgFrame49, event.image_url || imgFrame49, event.image_url || imgFrame49];
+
+  return (
+    <div className="content-stretch flex flex-col items-center pt-[66px] relative size-full">
+      <div className="content-stretch flex flex-col gap-[40px] items-start max-w-[1200px] pb-[80px] pt-[80px] w-full">
+        <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[8px] h-[42px] items-center justify-center px-[20px] py-[14px] relative rounded-full shrink-0" onClick={onBack} type="button">
+          <span className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">← Go back</span>
+        </button>
+
+        <div className="content-stretch flex gap-[20px] items-start relative shrink-0 w-full">
+          {galleryImages.map((image, index) => (
+            <button className={`overflow-clip relative rounded-[12px] shrink-0 size-[320px] ${index === galleryIndex ? "ring-2 ring-orange-500" : ""}`} key={`gallery-${index}`} onClick={() => setGalleryIndex(index)} type="button">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+                <div className="absolute bg-zinc-100 inset-0" />
+                <img alt={event.title} className="absolute inset-0 object-cover size-full" src={image} />
+              </div>
+              <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[8px] content-stretch cursor-pointer flex items-center justify-center p-[8px] right-[8px] rounded-full" />
+            </button>
+          ))}
+        </div>
+
+        <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+              <p className="font-semibold leading-none min-w-full not-italic overflow-hidden relative shrink-0 text-[48px] text-zinc-800 text-ellipsis tracking-[-0.5px] w-[min-content] whitespace-nowrap">
+                {event.title}
+              </p>
+              <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-full">
+                <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                  <div className="bg-zinc-200 rounded-full size-[24px]" />
+                  <div className="bg-zinc-200 rounded-full size-[24px]" />
+                  <div className="bg-zinc-200 rounded-full size-[24px]" />
+                </div>
+                <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                  Hosted by <span className="font-medium text-zinc-800">{event.organizer_name || "Unknown organizer"}</span>
+                </p>
+              </div>
+            </div>
+            <div className="border-zinc-200 border-t border-solid h-0 relative shrink-0 w-full" />
+
+            <div className="content-stretch flex gap-[20px] items-start relative shrink-0 w-full">
+              <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-[320px]">
+                <div className="border border-zinc-200 border-solid content-stretch flex flex-col gap-[4px] items-start justify-center overflow-clip pb-[8px] relative rounded-[8px] shrink-0 w-[40px]">
+                  <div className="bg-zinc-200 content-stretch flex items-center justify-center px-[4px] py-[6px] relative shrink-0 w-full">
+                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[8px] text-zinc-500 text-center tracking-[0.048px] whitespace-nowrap">
+                      {formatMonthLabel(event.event_date)}
+                    </p>
+                  </div>
+                  <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 text-center tracking-[0.072px] w-full">
+                    {formatDayLabel(event.event_date)}
+                  </p>
+                </div>
+                <div className="content-stretch flex flex-[1_0_0] flex-col gap-[4px] items-start justify-center min-h-px min-w-px relative">
+                  <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                    {formatEventWeekdayDate(event.event_date)}
+                  </p>
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                    {formatEventTime(event.start_time, event.end_time)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="content-stretch flex flex-[1_0_0] gap-[10px] items-center min-h-px min-w-px relative">
+                <div className="bg-zinc-100 border border-zinc-200 border-solid content-stretch flex flex-col h-[39px] items-center justify-center overflow-clip relative rounded-[8px] shrink-0 w-[35px]">
+                  <div className="overflow-clip relative shrink-0 size-[16px]">
+                    <div className="absolute inset-[8.33%_16.67%]">
+                      <div className="absolute inset-[-5.71%_-7.14%]">
+                        <img alt="" className="block max-w-none size-full" src={imgVector3} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="content-stretch flex flex-col gap-[2px] items-start justify-center relative shrink-0">
+                  <p className="font-medium leading-[22px] not-italic overflow-hidden relative shrink-0 text-[14px] text-zinc-500 text-ellipsis tracking-[0.084px] whitespace-nowrap">
+                    {getEventLocation(event)}
+                  </p>
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                    {event.location || "Accra, Ghana"}
+                  </p>
+                </div>
+                {registrationUrl ? (
+                  <a className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 whitespace-nowrap" href={registrationUrl} rel="noreferrer" target="_blank">
+                    ↗
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex flex-col gap-[20px] items-start justify-center p-[20px] relative rounded-[12px] shrink-0 w-full">
+            <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.4px] uppercase whitespace-nowrap">
+              Registration details
+            </p>
+            <p className="font-normal leading-[24px] min-w-full not-italic relative shrink-0 text-[16px] text-zinc-500 tracking-[0.096px] w-[min-content]">
+              Join us for this exciting event! {event.ticket_type === "paid" ? "This is a paid event." : "It's completely free."} Don&apos;t miss out, secure your spot and grab your ticket.
+            </p>
+            {registrationUrl ? (
+              <a className="bg-orange-600 content-stretch flex gap-[10px] h-[42px] items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0" href={registrationUrl} rel="noreferrer" target="_blank">
+                <p className="font-semibold leading-none not-italic relative shrink-0 text-[14px] text-white text-center whitespace-nowrap">
+                  Register
+                </p>
+              </a>
+            ) : (
+              <div className="bg-zinc-200 content-stretch flex gap-[10px] h-[42px] items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0">
+                <p className="font-semibold leading-none not-italic relative shrink-0 text-[14px] text-zinc-600 text-center whitespace-nowrap">
+                  Registration unavailable
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+              About this event
+            </p>
+            <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+              {descriptionBlocks.slice(0, 5).map((line, index) => (
+                <p className="font-normal leading-[24px] min-w-full not-italic relative shrink-0 text-[16px] text-zinc-500 tracking-[0.096px] w-[min-content]" key={`desc-${index}`}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+              Location
+            </p>
+            {event.location_link ? (
+              <iframe
+                className="border border-zinc-200 h-[220px] rounded-[12px] w-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={event.location_link}
+                title="Event location map"
+              />
+            ) : (
+              <div className="bg-zinc-100 border border-zinc-200 content-stretch flex h-[220px] items-center justify-center rounded-[12px] w-full">
+                <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                  Location map not available
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+              Speakers
+            </p>
+            <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
+              {(speakers.length > 0 ? speakers : [event.organizer_name || "TBA"]).map((name) => (
+                <div className="content-stretch flex gap-[8px] items-center relative shrink-0" key={name}>
+                  <div className="bg-zinc-300 rounded-full size-[8px]" />
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-600 tracking-[0.084px] whitespace-nowrap">
+                    {name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-zinc-50 content-stretch flex flex-col items-center px-[10px] py-[80px] relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-[1200px]">
+          <p className="font-semibold leading-none not-italic relative shrink-0 text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">
+            Events in the same area
+          </p>
+          <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+            {relatedEvents.map((item) => (
+              <NearbyEventCard event={item} key={item.source_id} onClick={onSelectEvent} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { events, isLoading, error, lastSyncedAt } = useEventFeed();
+  const [activeEventId, setActiveEventId] = React.useState(() => (typeof window === "undefined" ? null : getEventIdFromPath(window.location.pathname)));
+
+  const activeEvent = React.useMemo(
+    () => events.find((event) => event.source_id === activeEventId) ?? null,
+    [events, activeEventId],
+  );
+
+  const handleSelectEvent = React.useCallback((event) => {
+    if (!event?.source_id || typeof window === "undefined") {
+      return;
+    }
+
+    const nextPath = toEventPath(event.source_id);
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, "", nextPath);
+    }
+    window.scrollTo(0, 0);
+    setActiveEventId(event.source_id);
+  }, []);
+
+  const handleBackToHome = React.useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (window.location.pathname !== "/") {
+      window.history.pushState({}, "", "/");
+    }
+    window.scrollTo(0, 0);
+    setActiveEventId(null);
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handlePopState = () => {
+      setActiveEventId(getEventIdFromPath(window.location.pathname));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  if (activeEventId) {
+    return (
+      <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
+        <Nav />
+        {activeEvent ? (
+          <>
+            <EventDetailPage event={activeEvent} events={events} onBack={handleBackToHome} onSelectEvent={handleSelectEvent} />
+            <TechScene />
+          </>
+        ) : (
+          <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
+            <p className="font-semibold leading-none not-italic text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">Event not found</p>
+            <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[4px] h-[42px] items-center justify-center mt-[20px] px-[20px] py-[14px] relative rounded-full shrink-0" onClick={handleBackToHome} type="button">
+              <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">Go back</p>
+            </button>
+          </div>
+        )}
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
       <Nav />
       <HeroSection />
-      <TrendingEvents events={events} />
+      <TrendingEvents events={events} onSelectEvent={handleSelectEvent} />
       <TechScene />
       <Categories />
-      <AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} />
+      <AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} onSelectEvent={handleSelectEvent} />
       <Footer />
     </div>
   );
