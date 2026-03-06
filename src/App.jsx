@@ -20,15 +20,15 @@ const imgAlarm2Fill = "https://www.figma.com/api/mcp/asset/c9b2e812-cc61-45f1-9d
 const imgUnion3 = "https://www.figma.com/api/mcp/asset/dc7dd75f-084e-4b7e-ac5f-adfc95046b75";
 const imgCodeFill = "https://www.figma.com/api/mcp/asset/cb5f336b-a968-4dd9-8ee1-9bfe8bf88e86";
 
-const imgElementsCategory1 = "https://www.figma.com/api/mcp/asset/96724f03-3bd9-4f4f-8697-25a5c5e46419";
-const imgElementsCategory2 = "https://www.figma.com/api/mcp/asset/59fc2a7d-f41d-436e-81ed-df8bd5eb4106";
-const imgElementsCategory3 = "https://www.figma.com/api/mcp/asset/2633248e-2662-4241-8bfd-a1fc6586da61";
-const imgElementsCategory4 = "https://www.figma.com/api/mcp/asset/de7a9e96-8f2d-4ea4-ba25-7b52dcfdf650";
-const imgElementsCategory5 = "https://www.figma.com/api/mcp/asset/df2674d0-ff38-4f96-a25c-16bc7fcbf1d5";
-const imgElementsCategory6 = "https://www.figma.com/api/mcp/asset/dac38d5a-8ce5-4a41-8133-9c41ff6007ed";
-const imgElementsCategory7 = "https://www.figma.com/api/mcp/asset/fba30fa0-ebdb-43e2-a054-a41a1b4f3b47";
-const imgElementsCategory8 = "https://www.figma.com/api/mcp/asset/54fe3d70-e876-453f-afcc-380452c9d8d6";
-const imgElementsCategory9 = "https://www.figma.com/api/mcp/asset/3a4b295e-7ef6-4494-a728-746c80789b11";
+const imgElementsCategory1 = "https://www.figma.com/api/mcp/asset/dbc22807-d655-46da-9105-c5a80ddd7300";
+const imgElementsCategory2 = "https://www.figma.com/api/mcp/asset/305af11c-ab64-4842-b8d9-25f0684828c4";
+const imgElementsCategory3 = "https://www.figma.com/api/mcp/asset/b5925218-c881-482b-9366-a1907a179e06";
+const imgElementsCategory4 = "https://www.figma.com/api/mcp/asset/6b3084de-8ae8-4109-8887-953cf769f7af";
+const imgElementsCategory5 = "https://www.figma.com/api/mcp/asset/143bccce-dd5a-4974-9e37-f9676dd57fc0";
+const imgElementsCategory6 = "https://www.figma.com/api/mcp/asset/6746d360-92b0-4ce7-8036-0a3f866945c9";
+const imgElementsCategory7 = "https://www.figma.com/api/mcp/asset/8247a971-f710-4d8b-9dd1-b66fe6b2ccc0";
+const imgElementsCategory8 = "https://www.figma.com/api/mcp/asset/6f7ecb80-281b-4bba-bce9-385e01e887b0";
+const imgElementsCategory9 = "https://www.figma.com/api/mcp/asset/f7544878-e113-4588-b46e-4cc214978fd4";
 
 const imgGroup = "https://www.figma.com/api/mcp/asset/d968e4a2-085d-47a7-9f59-947295c0c82c";
 const imgGroup1 = "https://www.figma.com/api/mcp/asset/02dcb064-80e6-4b82-b94c-a03de28f145b";
@@ -202,12 +202,18 @@ function Ongoing({ className, property1 = "Start" }) {
 }
 
 function Status({ className, state = "Ongoing" }) {
-  const isOngoing = state === "Ongoing";
+  const normalizedState = state === "Ended" ? "Ended" : state === "Upcoming" ? "Upcoming" : "Ongoing";
+  const isOngoing = normalizedState === "Ongoing";
   return (
     <div className={className || `content-stretch flex relative ${isOngoing ? "items-start" : "h-[12px] items-center"}`} id={isOngoing ? "node-3566_8486" : "node-3566_8487"}>
-      {state === "Upcoming" && (
+      {normalizedState === "Upcoming" && (
         <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-blue-600 tracking-[0.06px] whitespace-nowrap">
           UPCOMING
+        </p>
+      )}
+      {normalizedState === "Ended" && (
+        <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.06px] whitespace-nowrap">
+          ENDED
         </p>
       )}
       {isOngoing && <Ongoing className="content-stretch flex gap-[4px] h-[12px] items-center overflow-clip relative shrink-0" />}
@@ -229,86 +235,107 @@ function SaveBtn({ className, property1 = "Default" }) {
   );
 }
 
-function EventCard({ img, state = "Upcoming" }) {
-    return (
-        <div className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 w-[288px]">
-            <div className="h-[288px] overflow-clip relative shrink-0 w-full">
-              <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-                <div className="absolute bg-zinc-100 inset-0" />
-                <div className="absolute inset-0 overflow-hidden">
-                  <img alt="" className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover" src={img} />
+function EventCard({ event, fallbackImage = imgFrame47 }) {
+  if (!event) {
+    return null;
+  }
+
+  const ticketType = (event.ticket_type || "free").toLowerCase();
+  const ticketLabel = ticketType === "paid" ? "PAID" : "FREE";
+  const ticketColor = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-800";
+  const description = truncateText(event.description || event.long_description || "No description available", 120);
+  const locationLabel = getEventLocation(event);
+
+  return (
+    <div className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 w-[288px]">
+      <div className="h-[288px] overflow-clip relative shrink-0 w-full">
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div className="absolute bg-zinc-100 inset-0" />
+          <div className="absolute inset-0 overflow-hidden">
+            <img alt={event.title} className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover" src={event.image_url || fallbackImage} />
+          </div>
+        </div>
+        <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[-22px] content-stretch cursor-pointer flex items-center justify-center opacity-0 p-[8px] right-[8px] rounded-full" />
+      </div>
+      <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
+        <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
+          <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[16px] text-zinc-800 text-ellipsis tracking-[-0.16px] w-full whitespace-nowrap">{event.title}</p>
+          <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
+            <Status className="content-stretch flex items-start relative shrink-0" state={event.status} />
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%_12.5%]">
+                  <div className="absolute inset-[-5.71%_-6.35%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVector1} />
+                  </div>
                 </div>
               </div>
-              <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[-22px] content-stretch cursor-pointer flex items-center justify-center opacity-0 p-[8px] right-[8px] rounded-full" />
+              <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                {formatEventDate(event.event_date)}
+              </p>
             </div>
-            <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-              <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
-                <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[16px] text-zinc-800 text-ellipsis tracking-[-0.16px] w-full whitespace-nowrap">{`Tech Party '25 (Code & Cocktails)`}</p>
-                <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
-                  <Status className="content-stretch flex items-start relative shrink-0" state={state}/>
-                  <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%_12.5%]">
-                        <div className="absolute inset-[-5.71%_-6.35%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector1} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      Oct 25
-                    </p>
-                  </div>
-                  <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%]">
-                        <div className="absolute inset-[-5.71%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector2} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      6PM - 11:30 PM
-                    </p>
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%]">
+                  <div className="absolute inset-[-5.71%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVector2} />
                   </div>
                 </div>
               </div>
-              <div className="content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
-                <p className="font-normal leading-[22px] min-w-full not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]">
-                  Join Code and Cocktails for a relaxed mix of tech, drinks, and good company...
-                </p>
-                <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
-                  <div className="bg-zinc-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%_16.67%]">
-                        <div className="absolute inset-[-5.71%_-7.14%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector3} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      East Legon, Accra
-                    </p>
-                  </div>
-                  <div className="bg-green-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
-                    <div className="relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%]">
-                        <div className="absolute inset-[-5%]">
-                          <img alt="" className="block max-w-none size-full" src={imgElements} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-green-800 tracking-[0.072px] whitespace-nowrap">
-                      GHS 250
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                {formatEventTime(event.start_time, event.end_time)}
+              </p>
             </div>
           </div>
-    )
+        </div>
+        <div className="content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
+          <p className="font-normal leading-[22px] min-w-full not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]">
+            {description}
+          </p>
+          <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
+            <div className="bg-zinc-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%_16.67%]">
+                  <div className="absolute inset-[-5.71%_-7.14%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVector3} />
+                  </div>
+                </div>
+              </div>
+              <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                {locationLabel}
+              </p>
+            </div>
+            <div className={`${ticketColor} content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0`}>
+              <div className="relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%]">
+                  <div className="absolute inset-[-5%]">
+                    <img alt="" className="block max-w-none size-full" src={imgElements} />
+                  </div>
+                </div>
+              </div>
+              <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] tracking-[0.072px] whitespace-nowrap">
+                {ticketLabel}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function TrendingEvents() {
+function TrendingEvents({ events = [] }) {
+  const featuredEvents = React.useMemo(() => {
+    const ranked = [...events].sort((a, b) => a.event_date.localeCompare(b.event_date));
+    return ranked.filter((event) => event.status !== "Ended").slice(0, 4);
+  }, [events]);
+
+  if (featuredEvents.length === 0) {
+    return null;
+  }
+
+  const fallbackImages = [imgFrame47, imgFrame48, imgFrame49, imgFrame50];
+
   return (
     <div className="content-stretch flex items-start justify-center px-[10px] relative size-full">
       <div className="content-stretch flex flex-col gap-[32px] items-start pb-[120px] relative shrink-0 w-[1200px]">
@@ -317,11 +344,10 @@ function TrendingEvents() {
             Top trending events
           </p>
         </div>
-        <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-          <EventCard img={imgFrame47} state="Ongoing"/>
-          <EventCard img={imgFrame48} state="Upcoming"/>
-          <EventCard img={imgFrame49} state="Upcoming"/>
-          <EventCard img={imgFrame50} state="Upcoming"/>
+        <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+          {featuredEvents.map((event, index) => (
+            <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} />
+          ))}
         </div>
       </div>
     </div>
@@ -397,7 +423,7 @@ function CategoryItem({ title, count, img, bg, iconBg }) {
         <div className={`bg-[var(${bg})] content-stretch flex gap-[10px] items-center p-[20px] relative rounded-[12px] shrink-0 w-[389.333px]`}>
             <div className={`bg-[var(${iconBg})] content-stretch flex items-center p-[8px] relative rounded-full shrink-0`}>
               <div className="relative shrink-0 size-[24px]">
-                <div className="absolute inset-[8.33%]">
+                <div className="absolute flex inset-[8.33%] items-center justify-center">
                   <div className="absolute inset-[-3.75%]">
                     <img alt="" className="block max-w-none size-full" src={img} />
                   </div>
@@ -495,7 +521,119 @@ function Footer() {
 const imgVectorAllEventsCal = "https://www.figma.com/api/mcp/asset/39a982ac-4275-460e-91e9-f8b3d9997457";
 const imgVectorAllEventsSearch = "https://www.figma.com/api/mcp/asset/2493da36-6c76-432e-b323-d9b6d7a28f6b";
 
-function AllEvents() {
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
+function buildApiUrl(path) {
+  return `${API_BASE_URL}${path}`;
+}
+
+function formatEventDate(dateText) {
+  if (!dateText) {
+    return "Date TBA";
+  }
+
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateText;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatEventTime(startTime, endTime) {
+  if (!startTime && !endTime) {
+    return "Time TBA";
+  }
+  if (startTime && endTime) {
+    return `${startTime} - ${endTime}`;
+  }
+  return startTime || endTime;
+}
+
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
+function getEventLocation(event) {
+  return event.venue || event.location || event.platform || "Location TBA";
+}
+
+function useEventFeed() {
+  const [events, setEvents] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [lastSyncedAt, setLastSyncedAt] = React.useState(null);
+
+  const fetchEvents = React.useCallback(async () => {
+    try {
+      const response = await fetch(buildApiUrl("/api/events?status=all&limit=500"));
+      if (!response.ok) {
+        throw new Error(`API request failed (${response.status})`);
+      }
+
+      const payload = await response.json();
+      setEvents(Array.isArray(payload.events) ? payload.events : []);
+      setLastSyncedAt(payload?.latestSync?.finished_at ?? null);
+      setError("");
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : "Could not load events");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchEvents();
+    const intervalId = setInterval(fetchEvents, 120000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchEvents]);
+
+  return { events, isLoading, error, lastSyncedAt };
+}
+
+function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = null }) {
+  const [statusFilter, setStatusFilter] = React.useState("All");
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [visibleCount, setVisibleCount] = React.useState(8);
+
+  const filteredEvents = React.useMemo(() => {
+    return events.filter((event) => {
+      const statusMatch = statusFilter === "All" || event.status === statusFilter;
+      const search = searchTerm.trim().toLowerCase();
+      if (!search) {
+        return statusMatch;
+      }
+
+      const searchable = [event.title, event.description, event.organizer_name, event.location, event.venue]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return statusMatch && searchable.includes(search);
+    });
+  }, [events, statusFilter, searchTerm]);
+
+  React.useEffect(() => {
+    setVisibleCount(8);
+  }, [statusFilter, searchTerm]);
+
+  const visibleEvents = filteredEvents.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredEvents.length;
+
+  const statusButtons = ["All", "Upcoming", "Ongoing", "Ended"];
+
+  const syncLabel = lastSyncedAt
+    ? `Synced ${new Date(lastSyncedAt).toLocaleString()}`
+    : "Waiting for first sync";
+
   return (
     <div className="content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
       <div className="bg-white content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-[1200px]">
@@ -513,12 +651,15 @@ function AllEvents() {
                 </div>
               </div>
               <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                980 Events
+                {filteredEvents.length} events
               </p>
             </div>
+            <p className="font-normal leading-[20px] not-italic text-[12px] text-zinc-400 tracking-[0.072px] whitespace-nowrap">
+              {syncLabel}
+            </p>
           </div>
           <div className="content-stretch flex gap-[12px] items-center relative shrink-0">
-            <div className="bg-zinc-50 border border-zinc-100 border-solid content-stretch flex items-center px-[20px] py-[16px] relative rounded-full shrink-0">
+            <div className="bg-zinc-50 border border-zinc-100 border-solid content-stretch flex gap-[8px] items-center px-[20px] py-[12px] relative rounded-full shrink-0">
               <div className="overflow-clip relative shrink-0 size-[16px]">
                 <div className="absolute inset-[12.5%]">
                   <div className="absolute inset-[-6.94%]">
@@ -526,85 +667,80 @@ function AllEvents() {
                   </div>
                 </div>
               </div>
+              <input
+                className="bg-transparent border-none font-normal leading-none text-[14px] text-zinc-700 outline-none w-[220px]"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search events"
+                value={searchTerm}
+              />
             </div>
             <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-0 items-center p-[4px] relative rounded-full shrink-0">
-              <div className="bg-white content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 shadow-sm">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
-                  All
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Upcoming
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Ongoing
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Ended
-                </p>
-              </div>
+              {statusButtons.map((label) => {
+                const isActive = statusFilter === label;
+                return (
+                  <button
+                    className={`${isActive ? "bg-white shadow-sm text-zinc-800" : "text-zinc-400 hover:text-zinc-600"} content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer transition-colors`}
+                    key={label}
+                    onClick={() => setStatusFilter(label)}
+                    type="button"
+                  >
+                    <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-center whitespace-nowrap">
+                      {label}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
         <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
+          {isLoading && events.length === 0 ? (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">Loading events...</p>
+          ) : null}
+          {error ? <p className="font-normal leading-[22px] not-italic text-[14px] text-red-500 tracking-[0.084px]">{error}</p> : null}
+          {!isLoading && visibleEvents.length === 0 ? (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">No events found for this filter.</p>
+          ) : null}
+          <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+            {visibleEvents.map((event, index) => (
+              <EventCard
+                event={event}
+                fallbackImage={[imgFrame47, imgFrame48, imgFrame49, imgFrame50][index % 4]}
+                key={event.source_id}
+              />
+            ))}
+          </div>
         </div>
-        <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
-            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors">
+        {hasMore ? (
+          <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
+            <button
+              className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors"
+              onClick={() => setVisibleCount((current) => current + 8)}
+              type="button"
+            >
               <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
-                Load 940 more
+                Load {Math.max(filteredEvents.length - visibleCount, 0)} more
               </p>
-            </div>
-        </div>
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
 
 export default function App() {
-    return (
-        <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
-            <Nav />
-            <HeroSection />
-            <TrendingEvents />
-            <TechScene />
-            <Categories />
-            <AllEvents />
-            <Footer />
-        </div>
-    )
+  const { events, isLoading, error, lastSyncedAt } = useEventFeed();
+
+  return (
+    <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
+      <Nav />
+      <HeroSection />
+      <TrendingEvents events={events} />
+      <TechScene />
+      <Categories />
+      <AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} />
+      <Footer />
+    </div>
+  );
 }
