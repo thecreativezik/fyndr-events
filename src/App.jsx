@@ -122,12 +122,9 @@ const imgGroup102 = "https://www.figma.com/api/mcp/asset/8359df79-6365-45d9-abf1
 const imgGroup103 = "https://www.figma.com/api/mcp/asset/1b9a4ee0-dba4-4d08-b43d-240be5347108";
 const imgGroup104 = "https://www.figma.com/api/mcp/asset/01e61794-d1ec-47fe-9503-d642d327e0bd";
 
-type OngoingProps = {
-  className?: string;
-  property1?: "End" | "Start";
-};
 
-function Ongoing({ className, property1 = "Start" }: OngoingProps) {
+
+function Ongoing({ className, property1 = "Start" }) {
   return (
     <div className={className || "content-stretch flex gap-[4px] h-[12px] items-center relative"}>
       <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-orange-600 tracking-[0.06px] whitespace-nowrap">
@@ -142,7 +139,7 @@ function Ongoing({ className, property1 = "Start" }: OngoingProps) {
   );
 }
 
-function Status({ className }: { className?: string }) {
+function Status({ className }) {
   return (
     <div className={className || ""}>
       <div className="content-stretch flex items-start relative">
@@ -152,12 +149,9 @@ function Status({ className }: { className?: string }) {
   );
 }
 
-type SaveBtnProps = {
-  className?: string;
-  property1?: "Default" | "Saved";
-};
 
-function SaveBtn({ className, property1 = "Default" }: SaveBtnProps) {
+
+function SaveBtn({ className, property1 = "Default" }) {
   return (
     <button className={className || "backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] content-stretch flex items-center justify-center p-[8px] relative rounded-full"}>
       <div className="overflow-clip relative shrink-0 size-[20px]">
