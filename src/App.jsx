@@ -361,57 +361,51 @@ function TechScene() {
   const containerRef = useRef(null);
   const textRef = useRef(null);
 
-  const textLines = [
-    "All of Ghana’s tech scene in one place. ",
-    "From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet."
-  ];
+  const firstSentence = "All of Ghana’s tech scene in one place.";
+  const secondSentence = "From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.";
+  const allWords = `${firstSentence} ${secondSentence}`.split(" ");
+  const firstSentenceWordCount = firstSentence.split(" ").length;
 
   useEffect(() => {
     const el = textRef.current;
     if (!el) return;
 
-    // Word-by-word scrub animation setup
     const words = el.querySelectorAll('.word');
-    
-    // Set initial state: first part fully visible, rest transparent
-    gsap.set(words, { 
-      opacity: (index) => {
-        // Find how many words are in the first sentence to keep them visible
-        const firstSentenceWordCount = textLines[0].trim().split(" ").length;
-        return index < firstSentenceWordCount ? 1 : 0.2;
-      }
+
+    gsap.set(words, {
+      opacity: (i) => (i < firstSentenceWordCount ? 1 : 0.15),
     });
+
+    const wordsToAnimate = Array.from(words).slice(firstSentenceWordCount);
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "center center", // Start when the center of the section hits the center of the viewport
-        end: "+=1000", // Control the scroll distance for the animation
-        scrub: 0.5, // Smooth scrubbing
-        pin: true, // Pin the section in place while the animation happens
-        pinSpacing: true, // Add padding below the pinned element
-      }
+        start: "top top",
+        end: "+=150%",
+        scrub: true,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+      },
     });
-
-    // Animate only the words after the first sentence
-    const firstSentenceWordCount = textLines[0].trim().split(" ").length;
-    const wordsToAnimate = Array.from(words).slice(firstSentenceWordCount);
 
     tl.to(wordsToAnimate, {
       opacity: 1,
-      stagger: 0.1,
+      duration: 1,
+      stagger: 0.08,
       ease: "none",
     });
 
     return () => {
       tl.kill();
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [textLines]);
+  }, [firstSentenceWordCount]);
 
   return (
-    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full min-h-screen mb-[400px]">
-      <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px] m-auto">
+    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-center justify-center px-[10px] relative w-full h-screen overflow-hidden">
+      <div className="content-stretch flex flex-col items-center relative shrink-0 w-[1200px]">
         <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
           <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
             <div className="h-[100px] relative shrink-0 w-[103.185px]">
@@ -461,8 +455,8 @@ function TechScene() {
           </div>
           <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
             <p ref={textRef} className="font-medium leading-[60px] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content] flex flex-wrap justify-center gap-x-[12px]">
-              {textLines.join("").split(" ").map((word, index) => (
-                <span key={index} className="word transition-opacity duration-150">
+              {allWords.map((word, index) => (
+                <span key={index} className="word inline-block">
                   {word}
                 </span>
               ))}
@@ -737,28 +731,38 @@ function normalizeSourceEvent(raw) {
   return { ...event, status: getEventStatus(event) };
 }
 
+const SOURCE_SELECT_FIELDS = [
+  "id",
+  "title",
+  "description",
+  "long_description",
+  "date",
+  "start_time",
+  "end_time",
+  "location",
+  "venue",
+  "location_type",
+  "platform",
+  "location_link",
+  "ticket_type",
+  "ticket_link",
+  "image_url",
+  "is_external_organizer",
+  "external_organizer_name",
+  "external_organizer_link",
+  "organizer:profiles(full_name,bio,profile_image_url)",
+].join(",");
+
+function getSourceHeaders() {
+  return {
+    apikey: TEG_SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${TEG_SUPABASE_ANON_KEY}`,
+    Accept: "application/json",
+  };
+}
+
 async function fetchEventsFromSource() {
-  const select = [
-    "id",
-    "title",
-    "description",
-    "long_description",
-    "date",
-    "start_time",
-    "end_time",
-    "location",
-    "venue",
-    "location_type",
-    "platform",
-    "location_link",
-    "ticket_type",
-    "ticket_link",
-    "image_url",
-    "is_external_organizer",
-    "external_organizer_name",
-    "external_organizer_link",
-    "organizer:profiles(full_name,bio,profile_image_url)",
-  ].join(",");
+  const select = SOURCE_SELECT_FIELDS;
 
   const params = new URLSearchParams();
   params.set("select", select);
@@ -766,11 +770,7 @@ async function fetchEventsFromSource() {
   params.set("limit", "500");
 
   const response = await fetch(`${TEG_SUPABASE_URL}/rest/v1/events?${params.toString()}`, {
-    headers: {
-      apikey: TEG_SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${TEG_SUPABASE_ANON_KEY}`,
-      Accept: "application/json",
-    },
+    headers: getSourceHeaders(),
   });
 
   if (!response.ok) {
@@ -779,6 +779,39 @@ async function fetchEventsFromSource() {
 
   const payload = await response.json();
   return Array.isArray(payload) ? payload.map(normalizeSourceEvent) : [];
+}
+
+async function fetchEventFromSourceById(eventId) {
+  const params = new URLSearchParams();
+  params.set("select", SOURCE_SELECT_FIELDS);
+  params.set("id", `eq.${eventId}`);
+  params.set("limit", "1");
+
+  const response = await fetch(`${TEG_SUPABASE_URL}/rest/v1/events?${params.toString()}`, {
+    headers: getSourceHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Source request failed (${response.status})`);
+  }
+
+  const payload = await response.json();
+  if (!Array.isArray(payload) || payload.length === 0) {
+    return null;
+  }
+  return normalizeSourceEvent(payload[0]);
+}
+
+async function fetchEventFromApiById(eventId) {
+  const response = await fetch(buildApiUrl(`/api/events/${encodeURIComponent(eventId)}`));
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`API request failed (${response.status})`);
+  }
+  const payload = await response.json();
+  return payload?.event ?? null;
 }
 
 function useEventFeed() {
@@ -828,6 +861,77 @@ function useEventFeed() {
   }, [fetchEvents]);
 
   return { events, isLoading, error, lastSyncedAt };
+}
+
+function useEventDetail(eventId, allEvents = []) {
+  const [event, setEvent] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  React.useEffect(() => {
+    if (!eventId) {
+      setEvent(null);
+      setError("");
+      setIsLoading(false);
+      return;
+    }
+
+    const cached = allEvents.find((item) => item.source_id === eventId) ?? null;
+    if (cached) {
+      setEvent(cached);
+    } else {
+      setEvent(null);
+    }
+
+    let isCancelled = false;
+
+    const fetchDetail = async () => {
+      setIsLoading(true);
+      setError("");
+
+      let apiErrorMessage = "";
+      try {
+        const apiEvent = await fetchEventFromApiById(eventId);
+        if (!isCancelled && apiEvent) {
+          setEvent(apiEvent);
+          setError("");
+        }
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+        if (apiEvent) {
+          return;
+        }
+      } catch (apiError) {
+        apiErrorMessage = apiError instanceof Error ? apiError.message : "Could not load local API detail";
+      }
+
+      try {
+        const sourceEvent = await fetchEventFromSourceById(eventId);
+        if (!isCancelled) {
+          setEvent(sourceEvent);
+          setError("");
+        }
+      } catch (sourceError) {
+        if (!isCancelled) {
+          const sourceMessage = sourceError instanceof Error ? sourceError.message : "Could not load source detail";
+          setError(apiErrorMessage ? `${apiErrorMessage}. ${sourceMessage}` : sourceMessage);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchDetail();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [eventId, allEvents]);
+
+  return { event, isLoading, error };
 }
 
 function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = null, onSelectEvent }) {
@@ -1213,11 +1317,7 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
 export default function App() {
   const { events, isLoading, error, lastSyncedAt } = useEventFeed();
   const [activeEventId, setActiveEventId] = React.useState(() => (typeof window === "undefined" ? null : getEventIdFromPath(window.location.pathname)));
-
-  const activeEvent = React.useMemo(
-    () => events.find((event) => event.source_id === activeEventId) ?? null,
-    [events, activeEventId],
-  );
+  const { event: activeEvent, isLoading: isEventDetailLoading, error: eventDetailError } = useEventDetail(activeEventId, events);
 
   const handleSelectEvent = React.useCallback((event) => {
     if (!event?.source_id || typeof window === "undefined") {
@@ -1262,6 +1362,11 @@ export default function App() {
     return (
       <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
         <Nav />
+        {isEventDetailLoading && !activeEvent ? (
+          <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
+            <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">Loading event details...</p>
+          </div>
+        ) : null}
         {activeEvent ? (
           <>
             <EventDetailPage event={activeEvent} events={events} onBack={handleBackToHome} onSelectEvent={handleSelectEvent} />
@@ -1270,6 +1375,7 @@ export default function App() {
         ) : (
           <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
             <p className="font-semibold leading-none not-italic text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">Event not found</p>
+            {eventDetailError ? <p className="font-normal leading-[22px] mt-[8px] not-italic text-[14px] text-red-500 tracking-[0.084px] whitespace-nowrap">{eventDetailError}</p> : null}
             <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[4px] h-[42px] items-center justify-center mt-[20px] px-[20px] py-[14px] relative rounded-full shrink-0" onClick={handleBackToHome} type="button">
               <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">Go back</p>
             </button>
