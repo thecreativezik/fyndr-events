@@ -386,9 +386,11 @@ function TechScene() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top center", 
-        end: "+=400", // Control the scroll distance for the animation
+        start: "center center", // Start when the center of the section hits the center of the viewport
+        end: "+=1000", // Control the scroll distance for the animation
         scrub: 0.5, // Smooth scrubbing
+        pin: true, // Pin the section in place while the animation happens
+        pinSpacing: true, // Add padding below the pinned element
       }
     });
 
@@ -409,8 +411,8 @@ function TechScene() {
   }, [textLines]);
 
   return (
-    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full">
-      <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px]">
+    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full min-h-screen">
+      <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px] m-auto">
         <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
           <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
             <div className="h-[100px] relative shrink-0 w-[103.185px]">
