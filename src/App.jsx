@@ -494,7 +494,7 @@ function CategoryItem({ title, count, img, bg, iconBg }) {
 
 function Categories() {
   return (
-    <div className="content-stretch flex items-start justify-center px-[10px] relative size-full">
+    <div className="bg-white content-stretch flex items-start justify-center px-[10px] relative size-full">
       <div className="content-stretch flex flex-col gap-[32px] items-start py-[120px] relative shrink-0 w-[1200px]">
         <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
           <p className="font-semibold leading-[60px] not-italic relative shrink-0 text-[24px] text-zinc-800 text-center tracking-[-0.24px] whitespace-nowrap">
@@ -970,7 +970,7 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
     : "Waiting for first sync";
 
   return (
-    <div className="content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
+    <div className="bg-white content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
       <div className="bg-white content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-[1200px]">
         <div className="bg-white content-stretch flex items-center justify-between w-full relative shrink-0">
           <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0">
