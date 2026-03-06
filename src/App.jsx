@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const imgRectangle8 = "https://www.figma.com/api/mcp/asset/760eed5e-5ae8-41c3-a225-4a627068696f";
 const imgVector = "https://www.figma.com/api/mcp/asset/20467850-3a9b-43c4-8cec-b509a6094dee";
@@ -355,8 +359,46 @@ function TrendingEvents({ events = [] }) {
 }
 
 function TechScene() {
+  const containerRef = useRef(null);
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    // Split text into lines/words or just animate the existing spans
+    const spans = el.querySelectorAll('span');
+    
+    // First span is fully visible
+    gsap.set(spans[0], { opacity: 1 });
+    // Rest of the text is slightly transparent initially
+    gsap.set([spans[1], spans[2]], { opacity: 0.2 });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top center", // Start animation when the top of the container hits the center of the viewport
+        end: "bottom center", // End animation when the bottom of the container hits the center of the viewport
+        scrub: 1, // Smooth scrubbing
+        toggleActions: "play none none reverse",
+      }
+    });
+
+    tl.to([spans[1], spans[2]], {
+      opacity: 1,
+      duration: 1,
+      stagger: 0.2, // Animate spans sequentially
+      ease: "power1.inOut"
+    });
+
+    return () => {
+      tl.kill();
+      ScrollTrigger.getAll().forEach(t => t.kill());
+    };
+  }, []);
+
   return (
-    <div className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full">
+    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full">
       <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px]">
         <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
           <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
@@ -406,10 +448,10 @@ function TechScene() {
             </div>
           </div>
           <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
-            <p className="font-medium leading-[0] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-500 text-center tracking-[-0.72px] w-[min-content]">
-              <span className="leading-[60px] text-zinc-800">All of Ghana’s tech scene in one place.</span>
-              <span className="leading-[60px]">{` `}</span>
-              <span className="leading-[60px] text-zinc-400">From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.</span>
+            <p ref={textRef} className="font-medium leading-[0] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content]">
+              <span className="leading-[60px] text-zinc-800 transition-opacity">All of Ghana’s tech scene in one place.</span>
+              <span className="leading-[60px] transition-opacity">{` `}</span>
+              <span className="leading-[60px] text-zinc-800 transition-opacity">From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.</span>
             </p>
           </div>
         </div>
