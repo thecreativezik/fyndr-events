@@ -492,6 +492,109 @@ function Footer() {
   );
 }
 
+const imgVectorAllEventsCal = "https://www.figma.com/api/mcp/asset/39a982ac-4275-460e-91e9-f8b3d9997457";
+const imgVectorAllEventsSearch = "https://www.figma.com/api/mcp/asset/2493da36-6c76-432e-b323-d9b6d7a28f6b";
+
+function AllEvents() {
+  return (
+    <div className="content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
+      <div className="bg-white content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-[1200px]">
+        <div className="bg-white content-stretch flex items-center justify-between w-full relative shrink-0">
+          <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[24px] text-zinc-800 tracking-[-0.24px]">
+              All events
+            </p>
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%_12.5%]">
+                  <div className="absolute inset-[-5.71%_-6.35%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVectorAllEventsCal} />
+                  </div>
+                </div>
+              </div>
+              <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                980 Events
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[12px] items-center relative shrink-0">
+            <div className="bg-zinc-50 border border-zinc-100 border-solid content-stretch flex items-center px-[20px] py-[16px] relative rounded-full shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[16px]">
+                <div className="absolute inset-[12.5%]">
+                  <div className="absolute inset-[-6.94%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVectorAllEventsSearch} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-0 items-center p-[4px] relative rounded-full shrink-0">
+              <div className="bg-white content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 shadow-sm">
+                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
+                  All
+                </p>
+              </div>
+              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
+                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
+                  Upcoming
+                </p>
+              </div>
+              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
+                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
+                  Ongoing
+                </p>
+              </div>
+              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
+                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
+                  Ended
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
+                <EventCard img={imgFrame47} state="Ongoing"/>
+                <EventCard img={imgFrame48} state="Upcoming"/>
+                <EventCard img={imgFrame49} state="Upcoming"/>
+                <EventCard img={imgFrame50} state="Upcoming"/>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
+                <EventCard img={imgFrame47} state="Ongoing"/>
+                <EventCard img={imgFrame48} state="Upcoming"/>
+                <EventCard img={imgFrame49} state="Upcoming"/>
+                <EventCard img={imgFrame50} state="Upcoming"/>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
+                <EventCard img={imgFrame47} state="Ongoing"/>
+                <EventCard img={imgFrame48} state="Upcoming"/>
+                <EventCard img={imgFrame49} state="Upcoming"/>
+                <EventCard img={imgFrame50} state="Upcoming"/>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
+                <EventCard img={imgFrame47} state="Ongoing"/>
+                <EventCard img={imgFrame48} state="Upcoming"/>
+                <EventCard img={imgFrame49} state="Upcoming"/>
+                <EventCard img={imgFrame50} state="Upcoming"/>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
+                <EventCard img={imgFrame47} state="Ongoing"/>
+                <EventCard img={imgFrame48} state="Upcoming"/>
+                <EventCard img={imgFrame49} state="Upcoming"/>
+                <EventCard img={imgFrame50} state="Upcoming"/>
+            </div>
+        </div>
+        <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
+            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors">
+              <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
+                Load 940 more
+              </p>
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
     return (
         <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
@@ -500,6 +603,7 @@ export default function App() {
             <TrendingEvents />
             <TechScene />
             <Categories />
+            <AllEvents />
             <Footer />
         </div>
     )
