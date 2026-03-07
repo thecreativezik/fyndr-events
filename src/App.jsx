@@ -1619,12 +1619,12 @@ export default function App() {
   return (
     <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
       <Nav />
-      <HeroSection />
-      <TrendingEvents events={events} onSelectEvent={handleSelectEvent} />
+      <AppearSection><HeroSection /></AppearSection>
+      <AppearSection><TrendingEvents events={events} onSelectEvent={handleSelectEvent} /></AppearSection>
       <TechScene />
-      <Categories />
-      <AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} onSelectEvent={handleSelectEvent} />
-      <Footer />
+      <AppearSection><Categories /></AppearSection>
+      <AppearSection><AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} onSelectEvent={handleSelectEvent} /></AppearSection>
+      <AppearSection><Footer /></AppearSection>
     </div>
   );
 }
