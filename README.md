@@ -56,5 +56,5 @@ Copy `.env.example` to `.env` and adjust values if needed.
 
 - `GET /api/health` — basic health + latest sync metadata
 - `GET /api/events?status=all|upcoming|ongoing|ended&q=...&limit=...` — fetch events
+- `GET /api/events/:sourceId` — fetch one event by source id
 - `POST /api/sync` — manually run importer
-

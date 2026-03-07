@@ -363,8 +363,67 @@ function TrendingEvents({ events = [], onSelectEvent }) {
   );
 }
 
+function useAppearOnScroll(ref, options = {}) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    gsap.set(el, { opacity: 0, y: 60 });
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: options.start || "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: options.duration || 0.8,
+          ease: "power3.out",
+        });
+      },
+    });
+
+    return () => trigger.kill();
+  }, [ref, options.start, options.duration]);
+}
+
+function AppearSection({ children, className = "", delay = 0 }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    gsap.set(el, { opacity: 0, y: 50 });
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          delay,
+          ease: "power3.out",
+        });
+      },
+    });
+
+    return () => trigger.kill();
+  }, [delay]);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
 function TechScene() {
-  const containerRef = useRef(null);
+  const wrapperRef = useRef(null);
   const textRef = useRef(null);
 
   const firstSentence = "All of Ghana’s tech scene in one place.";
@@ -374,9 +433,10 @@ function TechScene() {
 
   useEffect(() => {
     const el = textRef.current;
-    if (!el) return;
+    const wrapper = wrapperRef.current;
+    if (!el || !wrapper) return;
 
-    const words = el.querySelectorAll('.word');
+    const words = el.querySelectorAll(".word");
 
     gsap.set(words, {
       opacity: (i) => (i < firstSentenceWordCount ? 1 : 0.15),
@@ -386,87 +446,85 @@ function TechScene() {
 
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: containerRef.current,
+        trigger: wrapper,
         start: "top top",
-        end: "+=100%",
+        end: "bottom bottom",
         scrub: 0.3,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
       },
     });
 
     tl.to(wordsToAnimate, {
       opacity: 1,
-      duration: 0.5,
+      duration: 1,
       stagger: 0.05,
       ease: "none",
     });
 
     return () => {
       tl.kill();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, [firstSentenceWordCount]);
 
   return (
-    <div ref={containerRef} className="bg-zinc-50 content-stretch flex items-center justify-center px-[10px] relative w-full h-screen overflow-hidden">
-      <div className="content-stretch flex flex-col items-center relative shrink-0 w-[1200px]">
-        <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
-          <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
-            <div className="h-[100px] relative shrink-0 w-[103.185px]">
-              <div className="absolute h-[100px] left-0 top-0 w-[103.185px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion} />
+    <div ref={wrapperRef} className="relative w-full" style={{ height: "250vh" }}>
+      <div className="sticky top-0 bg-zinc-50 flex items-center justify-center px-[10px] w-full h-screen overflow-hidden">
+        <div className="flex flex-col items-center relative shrink-0 w-[1200px]">
+          <div className="flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
+            <div className="flex gap-[64px] items-center relative shrink-0">
+              <div className="h-[100px] relative shrink-0 w-[103.185px]">
+                <div className="absolute h-[100px] left-0 top-0 w-[103.185px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-1/2">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgHeartHandFill} />
+                </div>
               </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-1/2">
-                <img alt="" className="absolute block max-w-none size-full" src={imgHeartHandFill} />
+              <div className="h-[86.453px] relative shrink-0 w-[85.829px]">
+                <div className="absolute h-[86.453px] left-0 top-0 w-[85.829px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion1} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[40px] top-1/2">
+                  <div className="-scale-y-100 flex-none">
+                    <div className="overflow-clip relative size-[40px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgLightFill} />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="h-[86.453px] relative shrink-0 w-[85.829px]">
-              <div className="absolute h-[86.453px] left-0 top-0 w-[85.829px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion1} />
+              <div className="h-[120px] relative shrink-0 w-[124.805px]">
+                <div className="absolute h-[120px] left-0 top-0 w-[124.805px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion2} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-[calc(50%-13px)]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgAlarm2Fill} />
+                </div>
               </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[40px] top-1/2">
-                <div className="-scale-y-100 flex-none">
-                  <div className="overflow-clip relative size-[40px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgLightFill} />
+              <div className="h-[83.889px] relative shrink-0 w-[94.646px]">
+                <div className="absolute flex h-[83.889px] items-center justify-center left-0 top-0 w-[94.646px]">
+                  <div className="-scale-y-100 flex-none rotate-180">
+                    <div className="h-[83.889px] relative w-[94.646px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgUnion3} />
+                    </div>
+                  </div>
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[37.784px] top-[calc(50%-5px)]">
+                  <div className="flex-none rotate-[11.61deg]">
+                    <div className="overflow-clip relative size-[32px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgCodeFill} />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="h-[120px] relative shrink-0 w-[124.805px]">
-              <div className="absolute h-[120px] left-0 top-0 w-[124.805px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion2} />
-              </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-[calc(50%-13px)]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgAlarm2Fill} />
-              </div>
+            <div className="flex flex-col gap-[32px] items-center relative shrink-0 w-full">
+              <p ref={textRef} className="font-medium leading-[60px] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content] flex flex-wrap justify-center gap-x-[12px]">
+                {allWords.map((word, index) => (
+                  <span key={index} className="word inline-block">
+                    {word}
+                  </span>
+                ))}
+              </p>
             </div>
-            <div className="h-[83.889px] relative shrink-0 w-[94.646px]">
-              <div className="absolute flex h-[83.889px] items-center justify-center left-0 top-0 w-[94.646px]">
-                <div className="-scale-y-100 flex-none rotate-180">
-                  <div className="h-[83.889px] relative w-[94.646px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgUnion3} />
-                  </div>
-                </div>
-              </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[37.784px] top-[calc(50%-5px)]">
-                <div className="flex-none rotate-[11.61deg]">
-                  <div className="overflow-clip relative size-[32px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgCodeFill} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
-            <p ref={textRef} className="font-medium leading-[60px] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content] flex flex-wrap justify-center gap-x-[12px]">
-              {allWords.map((word, index) => (
-                <span key={index} className="word inline-block">
-                  {word}
-                </span>
-              ))}
-            </p>
           </div>
         </div>
       </div>
