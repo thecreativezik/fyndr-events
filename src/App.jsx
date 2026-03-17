@@ -534,8 +534,8 @@ function TechScene() {
 
 function CategoryItem({ title, count, img, bg, iconBg }) {
     return (
-        <div className={`bg-[var(${bg})] content-stretch flex gap-[10px] items-center p-[20px] relative rounded-[12px] shrink-0 w-[389.333px]`}>
-            <div className={`bg-[var(${iconBg})] content-stretch flex items-center p-[8px] relative rounded-full shrink-0`}>
+        <div className="content-stretch flex gap-[10px] items-center p-[20px] relative rounded-[12px] shrink-0 w-[389.333px]" style={{ backgroundColor: bg }}>
+            <div className="content-stretch flex items-center p-[8px] relative rounded-full shrink-0" style={{ backgroundColor: iconBg }}>
               <div className="relative shrink-0 size-[24px]">
                 <div className="absolute flex inset-[8.33%] items-center justify-center">
                   <div className="absolute inset-[-3.75%]">
@@ -566,15 +566,15 @@ function Categories() {
           </p>
         </div>
         <div className="content-start flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
-            <CategoryItem title="Innovation & Emerging Technologies" count="250" img={imgElementsCategory1} bg="--green\/50,#f0fdf4" iconBg="--green\/100,#dcfce7" />
-            <CategoryItem title="Business, Startups & Investment" count="250" img={imgElementsCategory2} bg="--blue\/50,#eff6ff" iconBg="--blue\/100,#dbeafe" />
-            <CategoryItem title="Software & Development" count="250" img={imgElementsCategory3} bg="--purple\/50,#faf5ff" iconBg="--purple\/100,#f3e8ff" />
-            <CategoryItem title="Design, UX/UI & Product" count="250" img={imgElementsCategory4} bg="--rose\/50,#fff1f2" iconBg="--rose\/100,#ffe4e6" />
-            <CategoryItem title="Data, Analytics & Infrastructure" count="250" img={imgElementsCategory5} bg="--amber\/50,#fffbeb" iconBg="--amber\/100,#fef3c7" />
-            <CategoryItem title="Industry-Specific Tech" count="250" img={imgElementsCategory6} bg="--lime\/50,#f7fee7" iconBg="--lime\/100,#ecfccb" />
-            <CategoryItem title="Networking, Career & Community" count="250" img={imgElementsCategory7} bg="--violet\/50,#f5f3ff" iconBg="--violet\/100,#ede9fe" />
-            <CategoryItem title="Showcases & Product Launches" count="250" img={imgElementsCategory8} bg="--fuchsia\/50,#fdf4ff" iconBg="--fuchsia\/100,#fae8ff" />
-            <CategoryItem title="Research & Academic" count="250" img={imgElementsCategory9} bg="--stone\/50,#fafaf9" iconBg="--stone\/100,#f5f5f4" />
+            <CategoryItem title="Innovation & Emerging Technologies" count="250" img={imgElementsCategory1} bg="#f0fdf4" iconBg="#dcfce7" />
+            <CategoryItem title="Business, Startups & Investment" count="250" img={imgElementsCategory2} bg="#eff6ff" iconBg="#dbeafe" />
+            <CategoryItem title="Software & Development" count="250" img={imgElementsCategory3} bg="#faf5ff" iconBg="#f3e8ff" />
+            <CategoryItem title="Design, UX/UI & Product" count="250" img={imgElementsCategory4} bg="#fff1f2" iconBg="#ffe4e6" />
+            <CategoryItem title="Data, Analytics & Infrastructure" count="250" img={imgElementsCategory5} bg="#fffbeb" iconBg="#fef3c7" />
+            <CategoryItem title="Industry-Specific Tech" count="250" img={imgElementsCategory6} bg="#f7fee7" iconBg="#ecfccb" />
+            <CategoryItem title="Networking, Career & Community" count="250" img={imgElementsCategory7} bg="#f5f3ff" iconBg="#ede9fe" />
+            <CategoryItem title="Showcases & Product Launches" count="250" img={imgElementsCategory8} bg="#fdf4ff" iconBg="#fae8ff" />
+            <CategoryItem title="Research & Academic" count="250" img={imgElementsCategory9} bg="#fafaf9" iconBg="#f5f5f4" />
         </div>
       </div>
     </div>
