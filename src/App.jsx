@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const imgRectangle8 = "https://www.figma.com/api/mcp/asset/760eed5e-5ae8-41c3-a225-4a627068696f";
 const imgVector = "https://www.figma.com/api/mcp/asset/20467850-3a9b-43c4-8cec-b509a6094dee";
@@ -9,8 +14,6 @@ const imgFrame50 = "https://www.figma.com/api/mcp/asset/c02d5e33-324e-4b0d-b51e-
 const imgVector1 = "https://www.figma.com/api/mcp/asset/bf683210-bd26-43b4-b07f-20c60f9277a5";
 const imgVector2 = "https://www.figma.com/api/mcp/asset/b2bbbf77-2406-4810-9828-02dabfb668a4";
 const imgVector3 = "https://www.figma.com/api/mcp/asset/60b219c8-e49b-4bd3-96e7-d3c29fab844d";
-const imgElements = "https://www.figma.com/api/mcp/asset/03eab964-1679-477f-96e8-2be98a65e4a9";
-
 const imgUnion = "https://www.figma.com/api/mcp/asset/3770e110-72cb-42f3-b41b-76860ce6b64a";
 const imgHeartHandFill = "https://www.figma.com/api/mcp/asset/62a9c907-77e7-4d20-b89e-9a67e75c61f7";
 const imgUnion1 = "https://www.figma.com/api/mcp/asset/e83e4534-e419-4d2c-8ae0-8c471f5833c8";
@@ -20,15 +23,15 @@ const imgAlarm2Fill = "https://www.figma.com/api/mcp/asset/c9b2e812-cc61-45f1-9d
 const imgUnion3 = "https://www.figma.com/api/mcp/asset/dc7dd75f-084e-4b7e-ac5f-adfc95046b75";
 const imgCodeFill = "https://www.figma.com/api/mcp/asset/cb5f336b-a968-4dd9-8ee1-9bfe8bf88e86";
 
-const imgElementsCategory1 = "https://www.figma.com/api/mcp/asset/96724f03-3bd9-4f4f-8697-25a5c5e46419";
-const imgElementsCategory2 = "https://www.figma.com/api/mcp/asset/59fc2a7d-f41d-436e-81ed-df8bd5eb4106";
-const imgElementsCategory3 = "https://www.figma.com/api/mcp/asset/2633248e-2662-4241-8bfd-a1fc6586da61";
-const imgElementsCategory4 = "https://www.figma.com/api/mcp/asset/de7a9e96-8f2d-4ea4-ba25-7b52dcfdf650";
-const imgElementsCategory5 = "https://www.figma.com/api/mcp/asset/df2674d0-ff38-4f96-a25c-16bc7fcbf1d5";
-const imgElementsCategory6 = "https://www.figma.com/api/mcp/asset/dac38d5a-8ce5-4a41-8133-9c41ff6007ed";
-const imgElementsCategory7 = "https://www.figma.com/api/mcp/asset/fba30fa0-ebdb-43e2-a054-a41a1b4f3b47";
-const imgElementsCategory8 = "https://www.figma.com/api/mcp/asset/54fe3d70-e876-453f-afcc-380452c9d8d6";
-const imgElementsCategory9 = "https://www.figma.com/api/mcp/asset/3a4b295e-7ef6-4494-a728-746c80789b11";
+const imgElementsCategory1 = "https://www.figma.com/api/mcp/asset/dbc22807-d655-46da-9105-c5a80ddd7300";
+const imgElementsCategory2 = "https://www.figma.com/api/mcp/asset/305af11c-ab64-4842-b8d9-25f0684828c4";
+const imgElementsCategory3 = "https://www.figma.com/api/mcp/asset/b5925218-c881-482b-9366-a1907a179e06";
+const imgElementsCategory4 = "https://www.figma.com/api/mcp/asset/6b3084de-8ae8-4109-8887-953cf769f7af";
+const imgElementsCategory5 = "https://www.figma.com/api/mcp/asset/143bccce-dd5a-4974-9e37-f9676dd57fc0";
+const imgElementsCategory6 = "https://www.figma.com/api/mcp/asset/6746d360-92b0-4ce7-8036-0a3f866945c9";
+const imgElementsCategory7 = "https://www.figma.com/api/mcp/asset/8247a971-f710-4d8b-9dd1-b66fe6b2ccc0";
+const imgElementsCategory8 = "https://www.figma.com/api/mcp/asset/6f7ecb80-281b-4bba-bce9-385e01e887b0";
+const imgElementsCategory9 = "https://www.figma.com/api/mcp/asset/f7544878-e113-4588-b46e-4cc214978fd4";
 
 const imgGroup = "https://www.figma.com/api/mcp/asset/d968e4a2-085d-47a7-9f59-947295c0c82c";
 const imgGroup1 = "https://www.figma.com/api/mcp/asset/02dcb064-80e6-4b82-b94c-a03de28f145b";
@@ -202,12 +205,18 @@ function Ongoing({ className, property1 = "Start" }) {
 }
 
 function Status({ className, state = "Ongoing" }) {
-  const isOngoing = state === "Ongoing";
+  const normalizedState = state === "Ended" ? "Ended" : state === "Upcoming" ? "Upcoming" : "Ongoing";
+  const isOngoing = normalizedState === "Ongoing";
   return (
     <div className={className || `content-stretch flex relative ${isOngoing ? "items-start" : "h-[12px] items-center"}`} id={isOngoing ? "node-3566_8486" : "node-3566_8487"}>
-      {state === "Upcoming" && (
+      {normalizedState === "Upcoming" && (
         <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-blue-600 tracking-[0.06px] whitespace-nowrap">
           UPCOMING
+        </p>
+      )}
+      {normalizedState === "Ended" && (
+        <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.06px] whitespace-nowrap">
+          ENDED
         </p>
       )}
       {isOngoing && <Ongoing className="content-stretch flex gap-[4px] h-[12px] items-center overflow-clip relative shrink-0" />}
@@ -217,7 +226,7 @@ function Status({ className, state = "Ongoing" }) {
 
 function SaveBtn({ className, property1 = "Default" }) {
   return (
-    <button className={className || "backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] content-stretch flex items-center justify-center p-[8px] relative rounded-full"}>
+    <div className={className || "backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] content-stretch flex items-center justify-center p-[8px] relative rounded-full"}>
       <div className="overflow-clip relative shrink-0 size-[20px]">
         <div className="absolute inset-[12.5%_20.83%]">
           <div className="absolute inset-[-3.81%_-4.9%]">
@@ -225,90 +234,113 @@ function SaveBtn({ className, property1 = "Default" }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EventCard({ event, fallbackImage = imgFrame47, onClick }) {
+  if (!event) {
+    return null;
+  }
+
+  const ticketType = (event.ticket_type || "free").toLowerCase();
+  const ticketLabel = ticketType === "paid" ? "PAID" : "FREE";
+  const ticketColor = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-800";
+  const description = truncateText(event.description || event.long_description || "No description available", 120);
+  const handleClick = () => {
+    if (typeof onClick === "function") {
+      onClick(event);
+    }
+  };
+
+  return (
+    <button
+      className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch cursor-pointer flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 text-left w-[288px] transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-[4px] hover:border-zinc-200 group"
+      onClick={handleClick}
+      type="button"
+    >
+      <div className="h-[288px] overflow-clip relative shrink-0 w-full">
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div className="absolute bg-zinc-100 inset-0" />
+          <div className="absolute inset-0 overflow-hidden">
+            <img alt={event.title} className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" src={event.image_url || fallbackImage} />
+          </div>
+        </div>
+        <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[8px] content-stretch cursor-pointer flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-[8px] right-[8px] rounded-full" />
+      </div>
+      <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
+        <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
+          <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[16px] text-zinc-800 text-ellipsis tracking-[-0.16px] w-full whitespace-nowrap">{event.title}</p>
+          <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
+            <Status className="content-stretch flex items-start relative shrink-0" state={getEventStatus(event)} />
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%_12.5%]">
+                  <div className="absolute inset-[-5.71%_-6.35%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVector1} />
+                  </div>
+                </div>
+              </div>
+              <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                {formatEventDate(event.event_date)}
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
+              <div className="overflow-clip relative shrink-0 size-[12px]">
+                <div className="absolute inset-[8.33%]">
+                  <div className="absolute inset-[-5.71%]">
+                    <img alt="" className="block max-w-none size-full" src={imgVector2} />
+                  </div>
+                </div>
+              </div>
+              <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                {formatEventTime(event.start_time, event.end_time)}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
+          <p
+            className="font-normal h-[66px] leading-[22px] min-w-full not-italic overflow-hidden relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]"
+            style={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 3, display: "-webkit-box" }}
+          >
+            {description}
+          </p>
+          <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
+            <div className={`${ticketColor} content-stretch flex gap-[4px] items-center px-[8px] py-[4px] relative rounded-[4px] shrink-0`}>
+              <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] tracking-[0.072px] whitespace-nowrap">
+                {ticketLabel}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </button>
   );
 }
 
-function EventCard({ img, state = "Upcoming" }) {
-    return (
-        <div className="bg-white border-[0.738px] border-zinc-100 border-solid content-stretch flex flex-col items-start overflow-clip relative rounded-[12px] shrink-0 w-[288px]">
-            <div className="h-[288px] overflow-clip relative shrink-0 w-full">
-              <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-                <div className="absolute bg-zinc-100 inset-0" />
-                <div className="absolute inset-0 overflow-hidden">
-                  <img alt="" className="absolute h-[129.9%] left-0 max-w-none top-[-0.17%] w-full object-cover" src={img} />
-                </div>
-              </div>
-              <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[-22px] content-stretch cursor-pointer flex items-center justify-center opacity-0 p-[8px] right-[8px] rounded-full" />
-            </div>
-            <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-              <div className="border-zinc-100 border-b border-solid content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
-                <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[16px] text-zinc-800 text-ellipsis tracking-[-0.16px] w-full whitespace-nowrap">{`Tech Party '25 (Code & Cocktails)`}</p>
-                <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full">
-                  <Status className="content-stretch flex items-start relative shrink-0" state={state}/>
-                  <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%_12.5%]">
-                        <div className="absolute inset-[-5.71%_-6.35%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector1} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      Oct 25
-                    </p>
-                  </div>
-                  <div className="content-stretch flex gap-[4px] items-center relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%]">
-                        <div className="absolute inset-[-5.71%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector2} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      6PM - 11:30 PM
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="content-stretch flex flex-col gap-[10px] items-start p-[20px] relative shrink-0 w-full">
-                <p className="font-normal leading-[22px] min-w-full not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] w-[min-content]">
-                  Join Code and Cocktails for a relaxed mix of tech, drinks, and good company...
-                </p>
-                <div className="content-stretch flex gap-[8px] items-start relative shrink-0">
-                  <div className="bg-zinc-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
-                    <div className="overflow-clip relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%_16.67%]">
-                        <div className="absolute inset-[-5.71%_-7.14%]">
-                          <img alt="" className="block max-w-none size-full" src={imgVector3} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                      East Legon, Accra
-                    </p>
-                  </div>
-                  <div className="bg-green-100 content-stretch flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-full shrink-0">
-                    <div className="relative shrink-0 size-[12px]">
-                      <div className="absolute inset-[8.33%]">
-                        <div className="absolute inset-[-5%]">
-                          <img alt="" className="block max-w-none size-full" src={imgElements} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-green-800 tracking-[0.072px] whitespace-nowrap">
-                      GHS 250
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-    )
-}
+function TrendingEvents({ events = [], onSelectEvent }) {
+  const featuredEvents = React.useMemo(() => {
+    const ranked = [...events]
+      .filter((event) => getEventStatus(event) !== "Ended")
+      .sort((a, b) => {
+        const registrationDiff = getEventRegistrationCount(b) - getEventRegistrationCount(a);
+        if (registrationDiff !== 0) {
+          return registrationDiff;
+        }
 
-function TrendingEvents() {
+        const dateDiff = String(a.event_date || "").localeCompare(String(b.event_date || ""));
+        if (dateDiff !== 0) {
+          return dateDiff;
+        }
+
+        return String(a.title || "").localeCompare(String(b.title || ""));
+      });
+    return ranked.slice(0, 4);
+  }, [events]);
+
+  const fallbackImages = [imgFrame47, imgFrame48, imgFrame49, imgFrame50];
+
   return (
     <div className="content-stretch flex items-start justify-center px-[10px] relative size-full">
       <div className="content-stretch flex flex-col gap-[32px] items-start pb-[120px] relative shrink-0 w-[1200px]">
@@ -317,74 +349,182 @@ function TrendingEvents() {
             Top trending events
           </p>
         </div>
-        <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-          <EventCard img={imgFrame47} state="Ongoing"/>
-          <EventCard img={imgFrame48} state="Upcoming"/>
-          <EventCard img={imgFrame49} state="Upcoming"/>
-          <EventCard img={imgFrame50} state="Upcoming"/>
+        <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+          {featuredEvents.length > 0 ? (
+            featuredEvents.map((event, index) => (
+              <EventCard event={event} fallbackImage={fallbackImages[index % fallbackImages.length]} key={event.source_id} onClick={onSelectEvent} />
+            ))
+          ) : (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">Trending events will appear once data is available.</p>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function TechScene() {
+function useAppearOnScroll(ref, options = {}) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    gsap.set(el, { opacity: 0, y: 60 });
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: options.start || "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: options.duration || 0.8,
+          ease: "power3.out",
+        });
+      },
+    });
+
+    return () => trigger.kill();
+  }, [ref, options.start, options.duration]);
+}
+
+function AppearSection({ children, className = "", delay = 0 }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    gsap.set(el, { opacity: 0, y: 50 });
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          delay,
+          ease: "power3.out",
+        });
+      },
+    });
+
+    return () => trigger.kill();
+  }, [delay]);
+
   return (
-    <div className="bg-zinc-50 content-stretch flex items-start justify-center px-[10px] relative size-full">
-      <div className="content-stretch flex flex-col items-center pb-[300px] pt-[250px] relative shrink-0 w-[1200px]">
-        <div className="content-stretch flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
-          <div className="content-stretch flex gap-[64px] items-center relative shrink-0">
-            <div className="h-[100px] relative shrink-0 w-[103.185px]">
-              <div className="absolute h-[100px] left-0 top-0 w-[103.185px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion} />
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
+function TechScene() {
+  const wrapperRef = useRef(null);
+  const textRef = useRef(null);
+
+  const firstSentence = "All of Ghana’s tech scene in one place.";
+  const secondSentence = "From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.";
+  const allWords = `${firstSentence} ${secondSentence}`.split(" ");
+  const firstSentenceWordCount = firstSentence.split(" ").length;
+
+  useEffect(() => {
+    const el = textRef.current;
+    const wrapper = wrapperRef.current;
+    if (!el || !wrapper) return;
+
+    const words = el.querySelectorAll(".word");
+
+    gsap.set(words, {
+      opacity: (i) => (i < firstSentenceWordCount ? 1 : 0.15),
+    });
+
+    const wordsToAnimate = Array.from(words).slice(firstSentenceWordCount);
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: wrapper,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.3,
+      },
+    });
+
+    tl.to(wordsToAnimate, {
+      opacity: 1,
+      duration: 1,
+      stagger: 0.05,
+      ease: "none",
+    });
+
+    return () => {
+      tl.kill();
+    };
+  }, [firstSentenceWordCount]);
+
+  return (
+    <div ref={wrapperRef} className="relative w-full" style={{ height: "250vh" }}>
+      <div className="sticky top-0 bg-zinc-50 flex items-center justify-center px-[10px] w-full h-screen overflow-hidden">
+        <div className="flex flex-col items-center relative shrink-0 w-[1200px]">
+          <div className="flex flex-col gap-[60px] items-center relative shrink-0 w-[841.809px]">
+            <div className="flex gap-[64px] items-center relative shrink-0">
+              <div className="h-[100px] relative shrink-0 w-[103.185px]">
+                <div className="absolute h-[100px] left-0 top-0 w-[103.185px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-1/2">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgHeartHandFill} />
+                </div>
               </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-1/2">
-                <img alt="" className="absolute block max-w-none size-full" src={imgHeartHandFill} />
+              <div className="h-[86.453px] relative shrink-0 w-[85.829px]">
+                <div className="absolute h-[86.453px] left-0 top-0 w-[85.829px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion1} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[40px] top-1/2">
+                  <div className="-scale-y-100 flex-none">
+                    <div className="overflow-clip relative size-[40px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgLightFill} />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="h-[86.453px] relative shrink-0 w-[85.829px]">
-              <div className="absolute h-[86.453px] left-0 top-0 w-[85.829px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion1} />
+              <div className="h-[120px] relative shrink-0 w-[124.805px]">
+                <div className="absolute h-[120px] left-0 top-0 w-[124.805px]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgUnion2} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-[calc(50%-13px)]">
+                  <img alt="" className="absolute block max-w-none size-full" src={imgAlarm2Fill} />
+                </div>
               </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[40px] top-1/2">
-                <div className="-scale-y-100 flex-none">
-                  <div className="overflow-clip relative size-[40px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgLightFill} />
+              <div className="h-[83.889px] relative shrink-0 w-[94.646px]">
+                <div className="absolute flex h-[83.889px] items-center justify-center left-0 top-0 w-[94.646px]">
+                  <div className="-scale-y-100 flex-none rotate-180">
+                    <div className="h-[83.889px] relative w-[94.646px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgUnion3} />
+                    </div>
+                  </div>
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[37.784px] top-[calc(50%-5px)]">
+                  <div className="flex-none rotate-[11.61deg]">
+                    <div className="overflow-clip relative size-[32px]">
+                      <img alt="" className="absolute block max-w-none size-full" src={imgCodeFill} />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="h-[120px] relative shrink-0 w-[124.805px]">
-              <div className="absolute h-[120px] left-0 top-0 w-[124.805px]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgUnion2} />
-              </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 overflow-clip size-[32px] top-[calc(50%-13px)]">
-                <img alt="" className="absolute block max-w-none size-full" src={imgAlarm2Fill} />
-              </div>
+            <div className="flex flex-col gap-[32px] items-center relative shrink-0 w-full">
+              <p ref={textRef} className="font-medium leading-[60px] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-800 text-center tracking-[-0.72px] w-[min-content] flex flex-wrap justify-center gap-x-[12px]">
+                {allWords.map((word, index) => (
+                  <span key={index} className="word inline-block">
+                    {word}
+                  </span>
+                ))}
+              </p>
             </div>
-            <div className="h-[83.889px] relative shrink-0 w-[94.646px]">
-              <div className="absolute flex h-[83.889px] items-center justify-center left-0 top-0 w-[94.646px]">
-                <div className="-scale-y-100 flex-none rotate-180">
-                  <div className="h-[83.889px] relative w-[94.646px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgUnion3} />
-                  </div>
-                </div>
-              </div>
-              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex items-center justify-center left-1/2 size-[37.784px] top-[calc(50%-5px)]">
-                <div className="flex-none rotate-[11.61deg]">
-                  <div className="overflow-clip relative size-[32px]">
-                    <img alt="" className="absolute block max-w-none size-full" src={imgCodeFill} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
-            <p className="font-medium leading-[0] min-w-full not-italic relative shrink-0 text-[48px] text-zinc-500 text-center tracking-[-0.72px] w-[min-content]">
-              <span className="leading-[60px] text-zinc-800">All of Ghana’s tech scene in one place.</span>
-              <span className="leading-[60px]">{` `}</span>
-              <span className="leading-[60px] text-zinc-400">From intimate design meetups to large scale hackathons. Discover where innovators, builders, and founders meet.</span>
-            </p>
           </div>
         </div>
       </div>
@@ -394,10 +534,10 @@ function TechScene() {
 
 function CategoryItem({ title, count, img, bg, iconBg }) {
     return (
-        <div className={`bg-[var(${bg})] content-stretch flex gap-[10px] items-center p-[20px] relative rounded-[12px] shrink-0 w-[389.333px]`}>
-            <div className={`bg-[var(${iconBg})] content-stretch flex items-center p-[8px] relative rounded-full shrink-0`}>
+        <div className="content-stretch flex gap-[10px] items-center p-[20px] relative rounded-[12px] shrink-0 w-[389.333px]" style={{ backgroundColor: bg }}>
+            <div className="content-stretch flex items-center p-[8px] relative rounded-full shrink-0" style={{ backgroundColor: iconBg }}>
               <div className="relative shrink-0 size-[24px]">
-                <div className="absolute inset-[8.33%]">
+                <div className="absolute flex inset-[8.33%] items-center justify-center">
                   <div className="absolute inset-[-3.75%]">
                     <img alt="" className="block max-w-none size-full" src={img} />
                   </div>
@@ -418,7 +558,7 @@ function CategoryItem({ title, count, img, bg, iconBg }) {
 
 function Categories() {
   return (
-    <div className="content-stretch flex items-start justify-center px-[10px] relative size-full">
+    <div className="bg-white content-stretch flex items-start justify-center px-[10px] relative size-full">
       <div className="content-stretch flex flex-col gap-[32px] items-start py-[120px] relative shrink-0 w-[1200px]">
         <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
           <p className="font-semibold leading-[60px] not-italic relative shrink-0 text-[24px] text-zinc-800 text-center tracking-[-0.24px] whitespace-nowrap">
@@ -426,15 +566,15 @@ function Categories() {
           </p>
         </div>
         <div className="content-start flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
-            <CategoryItem title="Innovation & Emerging Technologies" count="250" img={imgElementsCategory1} bg="--green\/50,#f0fdf4" iconBg="--green\/100,#dcfce7" />
-            <CategoryItem title="Business, Startups & Investment" count="250" img={imgElementsCategory2} bg="--blue\/50,#eff6ff" iconBg="--blue\/100,#dbeafe" />
-            <CategoryItem title="Software & Development" count="250" img={imgElementsCategory3} bg="--purple\/50,#faf5ff" iconBg="--purple\/100,#f3e8ff" />
-            <CategoryItem title="Design, UX/UI & Product" count="250" img={imgElementsCategory4} bg="--rose\/50,#fff1f2" iconBg="--rose\/100,#ffe4e6" />
-            <CategoryItem title="Data, Analytics & Infrastructure" count="250" img={imgElementsCategory5} bg="--amber\/50,#fffbeb" iconBg="--amber\/100,#fef3c7" />
-            <CategoryItem title="Industry-Specific Tech" count="250" img={imgElementsCategory6} bg="--lime\/50,#f7fee7" iconBg="--lime\/100,#ecfccb" />
-            <CategoryItem title="Networking, Career & Community" count="250" img={imgElementsCategory7} bg="--violet\/50,#f5f3ff" iconBg="--violet\/100,#ede9fe" />
-            <CategoryItem title="Showcases & Product Launches" count="250" img={imgElementsCategory8} bg="--fuchsia\/50,#fdf4ff" iconBg="--fuchsia\/100,#fae8ff" />
-            <CategoryItem title="Research & Academic" count="250" img={imgElementsCategory9} bg="--stone\/50,#fafaf9" iconBg="--stone\/100,#f5f5f4" />
+            <CategoryItem title="Innovation & Emerging Technologies" count="250" img={imgElementsCategory1} bg="#f0fdf4" iconBg="#dcfce7" />
+            <CategoryItem title="Business, Startups & Investment" count="250" img={imgElementsCategory2} bg="#eff6ff" iconBg="#dbeafe" />
+            <CategoryItem title="Software & Development" count="250" img={imgElementsCategory3} bg="#faf5ff" iconBg="#f3e8ff" />
+            <CategoryItem title="Design, UX/UI & Product" count="250" img={imgElementsCategory4} bg="#fff1f2" iconBg="#ffe4e6" />
+            <CategoryItem title="Data, Analytics & Infrastructure" count="250" img={imgElementsCategory5} bg="#fffbeb" iconBg="#fef3c7" />
+            <CategoryItem title="Industry-Specific Tech" count="250" img={imgElementsCategory6} bg="#f7fee7" iconBg="#ecfccb" />
+            <CategoryItem title="Networking, Career & Community" count="250" img={imgElementsCategory7} bg="#f5f3ff" iconBg="#ede9fe" />
+            <CategoryItem title="Showcases & Product Launches" count="250" img={imgElementsCategory8} bg="#fdf4ff" iconBg="#fae8ff" />
+            <CategoryItem title="Research & Academic" count="250" img={imgElementsCategory9} bg="#fafaf9" iconBg="#f5f5f4" />
         </div>
       </div>
     </div>
@@ -495,9 +635,526 @@ function Footer() {
 const imgVectorAllEventsCal = "https://www.figma.com/api/mcp/asset/39a982ac-4275-460e-91e9-f8b3d9997457";
 const imgVectorAllEventsSearch = "https://www.figma.com/api/mcp/asset/2493da36-6c76-432e-b323-d9b6d7a28f6b";
 
-function AllEvents() {
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const TEG_SUPABASE_URL = (import.meta.env.VITE_TEG_SUPABASE_URL ?? "https://xvodlnzivmwthattilwr.supabase.co").replace(/\/$/, "");
+const TEG_SUPABASE_ANON_KEY = import.meta.env.VITE_TEG_SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2Rsbnppdm13dGhhdHRpbHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwMjMzNDUsImV4cCI6MjA2NTU5OTM0NX0.FFaTiUUAVAhjDeOkRyt7v4PlqzFJwlIu6VXZMXQgEDc";
+
+function buildApiUrl(path) {
+  return `${API_BASE_URL}${path}`;
+}
+
+function formatEventDate(dateText) {
+  if (!dateText) {
+    return "Date TBA";
+  }
+
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateText;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatMonthLabel(dateText) {
+  if (!dateText) {
+    return "TBA";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "TBA";
+  }
+  return parsed.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+}
+
+function formatDayLabel(dateText) {
+  if (!dateText) {
+    return "--";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "--";
+  }
+  return String(parsed.getDate());
+}
+
+function formatEventWeekdayDate(dateText) {
+  if (!dateText) {
+    return "Date TBA";
+  }
+  const parsed = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateText;
+  }
+  return parsed.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+function formatEventTime(startTime, endTime) {
+  if (!startTime && !endTime) {
+    return "Time TBA";
+  }
+  if (startTime && endTime) {
+    return `${startTime} - ${endTime}`;
+  }
+  return startTime || endTime;
+}
+
+function toSafeCount(value) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return parsed;
+}
+
+function getRegistrationCountFromRaw(raw) {
+  return toSafeCount(
+    raw.registration_count ??
+      raw.registrations_count ??
+      raw.registered_count ??
+      raw.attendee_count ??
+      raw.attendees_count ??
+      raw.total_registrations ??
+      0,
+  );
+}
+
+function getEventRegistrationCount(event) {
+  return toSafeCount(event?.registration_count ?? event?.registrations_count ?? 0);
+}
+
+function normalizeExternalUrl(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^www\./i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  if (/^[a-z0-9.-]+\.[a-z]{2,}/i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return null;
+}
+
+function getRegistrationUrl(event) {
+  const candidates = [event?.ticket_link, event?.registration_link, event?.external_organizer_link];
+  for (const candidate of candidates) {
+    const normalized = normalizeExternalUrl(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+function normalizeImageUrl(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  if (/^https?:\/\//i.test(trimmed) || /^data:image\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+  if (trimmed.startsWith("/")) {
+    return `${TEG_SUPABASE_URL}${trimmed}`;
+  }
+  if (/^www\./i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
+function getHostImageUrls(event) {
+  const candidates = [event?.organizer_profile_image_url, event?.host_profile_image_url, event?.organizer_image_url];
+  const hostImages = candidates
+    .flatMap((value) => {
+      if (!value) {
+        return [];
+      }
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value === "string") {
+        return value.split(",").map((item) => item.trim()).filter(Boolean);
+      }
+      return [];
+    })
+    .map(normalizeImageUrl)
+    .filter(Boolean);
+
+  return [...new Set(hostImages)].slice(0, 3);
+}
+
+function isPhysicalLocationEvent(event) {
+  const locationType = String(event?.location_type ?? "physical").trim().toLowerCase();
+  return ["physical", "in_person", "in-person", "onsite", "on_site"].includes(locationType);
+}
+
+function buildGoogleMapsSearchUrl(query) {
+  if (!query) {
+    return null;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function getEventMapUrl(event) {
+  if (!isPhysicalLocationEvent(event)) {
+    return null;
+  }
+
+  const normalizedLocationLink = normalizeExternalUrl(event?.location_link);
+  if (normalizedLocationLink) {
+    return normalizedLocationLink;
+  }
+
+  const mapQuery = [event?.venue, event?.location].filter(Boolean).join(", ");
+  return buildGoogleMapsSearchUrl(mapQuery || "Accra, Ghana");
+}
+
+function getEventMapEmbedUrl(event) {
+  if (!isPhysicalLocationEvent(event)) {
+    return null;
+  }
+  const mapQuery = [event?.venue, event?.location].filter(Boolean).join(", ");
+  if (!mapQuery) {
+    return null;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+}
+
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
+function getEventLocation(event) {
+  return event.venue || event.location || event.platform || "Location TBA";
+}
+
+function parseDateTimeForStatus(dateText, timeText) {
+  if (!dateText) {
+    return null;
+  }
+  if (!timeText) {
+    const fallback = new Date(`${dateText}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  const match = String(timeText).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+  if (!match) {
+    const fallback = new Date(`${dateText}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  let hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2] ?? "0", 10);
+  const meridiem = match[3]?.toUpperCase();
+
+  if (meridiem === "AM" && hours === 12) {
+    hours = 0;
+  } else if (meridiem === "PM" && hours < 12) {
+    hours += 12;
+  }
+
+  const parsed = new Date(`${dateText}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getEventStatus(event) {
+  if (event?.status) {
+    return event.status;
+  }
+
+  const start = parseDateTimeForStatus(event?.event_date, event?.start_time);
+  const end = parseDateTimeForStatus(event?.event_date, event?.end_time ?? event?.start_time);
+  const now = new Date();
+
+  if (!start || !end) {
+    return "Upcoming";
+  }
+  if (now < start) {
+    return "Upcoming";
+  }
+  if (now > end) {
+    return "Ended";
+  }
+  return "Ongoing";
+}
+
+function normalizeSourceEvent(raw) {
+  const event = {
+    source_id: raw.id,
+    title: raw.title,
+    description: raw.description ?? raw.long_description ?? "",
+    long_description: raw.long_description ?? null,
+    event_date: raw.date ?? null,
+    start_time: raw.start_time ?? null,
+    end_time: raw.end_time ?? null,
+    location: raw.location ?? null,
+    venue: raw.venue ?? null,
+    location_type: raw.location_type ?? "physical",
+    platform: raw.platform ?? null,
+    location_link: raw.location_link ?? null,
+    ticket_type: raw.ticket_type ?? "free",
+    ticket_link: raw.ticket_link ?? null,
+    image_url: raw.image_url ?? null,
+    organizer_name: raw.is_external_organizer ? (raw.external_organizer_name ?? "Unknown Organizer") : (raw.organizer?.full_name ?? "Unknown Organizer"),
+    organizer_bio: raw.organizer?.bio ?? null,
+    organizer_profile_image_url: raw.organizer?.profile_image_url ?? null,
+    is_external_organizer: raw.is_external_organizer ? 1 : 0,
+    external_organizer_name: raw.external_organizer_name ?? null,
+    external_organizer_link: raw.external_organizer_link ?? null,
+    registration_count: getRegistrationCountFromRaw(raw),
+    synced_at: new Date().toISOString(),
+  };
+  return { ...event, status: getEventStatus(event) };
+}
+
+const SOURCE_SELECT_FIELDS = "*,organizer:profiles(full_name,bio,profile_image_url)";
+
+function getSourceHeaders() {
+  return {
+    apikey: TEG_SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${TEG_SUPABASE_ANON_KEY}`,
+    Accept: "application/json",
+  };
+}
+
+async function fetchEventsFromSource() {
+  const select = SOURCE_SELECT_FIELDS;
+
+  const params = new URLSearchParams();
+  params.set("select", select);
+  params.set("order", "date.asc");
+  params.set("limit", "500");
+
+  const response = await fetch(`${TEG_SUPABASE_URL}/rest/v1/events?${params.toString()}`, {
+    headers: getSourceHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Source request failed (${response.status})`);
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload.map(normalizeSourceEvent) : [];
+}
+
+async function fetchEventFromSourceById(eventId) {
+  const params = new URLSearchParams();
+  params.set("select", SOURCE_SELECT_FIELDS);
+  params.set("id", `eq.${eventId}`);
+  params.set("limit", "1");
+
+  const response = await fetch(`${TEG_SUPABASE_URL}/rest/v1/events?${params.toString()}`, {
+    headers: getSourceHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Source request failed (${response.status})`);
+  }
+
+  const payload = await response.json();
+  if (!Array.isArray(payload) || payload.length === 0) {
+    return null;
+  }
+  return normalizeSourceEvent(payload[0]);
+}
+
+async function fetchEventFromApiById(eventId) {
+  const response = await fetch(buildApiUrl(`/api/events/${encodeURIComponent(eventId)}`));
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`API request failed (${response.status})`);
+  }
+  const payload = await response.json();
+  return payload?.event ?? null;
+}
+
+function useEventFeed() {
+  const [events, setEvents] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [lastSyncedAt, setLastSyncedAt] = React.useState(null);
+
+  const fetchEvents = React.useCallback(async () => {
+    let apiErrorMessage = "";
+
+    try {
+      const response = await fetch(buildApiUrl("/api/events?status=all&limit=500"));
+      if (!response.ok) {
+        throw new Error(`API request failed (${response.status})`);
+      }
+
+      const payload = await response.json();
+      setEvents(Array.isArray(payload.events) ? payload.events : []);
+      setLastSyncedAt(payload?.latestSync?.finished_at ?? null);
+      setError("");
+      return;
+    } catch (fetchError) {
+      apiErrorMessage = fetchError instanceof Error ? fetchError.message : "Could not load local API events";
+    }
+
+    try {
+      const sourceEvents = await fetchEventsFromSource();
+      setEvents(sourceEvents);
+      setLastSyncedAt(new Date().toISOString());
+      setError("");
+    } catch (sourceError) {
+      const sourceMessage = sourceError instanceof Error ? sourceError.message : "Could not load source events";
+      setEvents([]);
+      setError(`${apiErrorMessage}. ${sourceMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchEvents();
+    const intervalId = setInterval(fetchEvents, 120000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchEvents]);
+
+  return { events, isLoading, error, lastSyncedAt };
+}
+
+function useEventDetail(eventId, allEvents = []) {
+  const [event, setEvent] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  React.useEffect(() => {
+    if (!eventId) {
+      setEvent(null);
+      setError("");
+      setIsLoading(false);
+      return;
+    }
+
+    const cached = allEvents.find((item) => item.source_id === eventId) ?? null;
+    if (cached) {
+      setEvent(cached);
+    } else {
+      setEvent(null);
+    }
+
+    let isCancelled = false;
+
+    const fetchDetail = async () => {
+      setIsLoading(true);
+      setError("");
+
+      let apiErrorMessage = "";
+      try {
+        const apiEvent = await fetchEventFromApiById(eventId);
+        if (!isCancelled && apiEvent) {
+          setEvent(apiEvent);
+          setError("");
+        }
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+        if (apiEvent) {
+          return;
+        }
+      } catch (apiError) {
+        apiErrorMessage = apiError instanceof Error ? apiError.message : "Could not load local API detail";
+      }
+
+      try {
+        const sourceEvent = await fetchEventFromSourceById(eventId);
+        if (!isCancelled) {
+          setEvent(sourceEvent);
+          setError("");
+        }
+      } catch (sourceError) {
+        if (!isCancelled) {
+          const sourceMessage = sourceError instanceof Error ? sourceError.message : "Could not load source detail";
+          setError(apiErrorMessage ? `${apiErrorMessage}. ${sourceMessage}` : sourceMessage);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchDetail();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [eventId, allEvents]);
+
+  return { event, isLoading, error };
+}
+
+function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = null, onSelectEvent }) {
+  const [statusFilter, setStatusFilter] = React.useState("All");
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [visibleCount, setVisibleCount] = React.useState(8);
+
+  const filteredEvents = React.useMemo(() => {
+    return events.filter((event) => {
+      const statusMatch = statusFilter === "All" || getEventStatus(event) === statusFilter;
+      const search = searchTerm.trim().toLowerCase();
+      if (!search) {
+        return statusMatch;
+      }
+
+      const searchable = [event.title, event.description, event.organizer_name, event.location, event.venue]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return statusMatch && searchable.includes(search);
+    });
+  }, [events, statusFilter, searchTerm]);
+
+  React.useEffect(() => {
+    setVisibleCount(8);
+  }, [statusFilter, searchTerm]);
+
+  const visibleEvents = filteredEvents.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredEvents.length;
+
+  const statusButtons = ["All", "Upcoming", "Ongoing", "Ended"];
+
+  const syncLabel = lastSyncedAt
+    ? `Synced ${new Date(lastSyncedAt).toLocaleString()}`
+    : "Waiting for first sync";
+
   return (
-    <div className="content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
+    <div className="bg-white content-stretch flex flex-col items-center pt-[66px] pb-[120px] relative size-full">
       <div className="bg-white content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-[1200px]">
         <div className="bg-white content-stretch flex items-center justify-between w-full relative shrink-0">
           <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0">
@@ -513,12 +1170,15 @@ function AllEvents() {
                 </div>
               </div>
               <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
-                980 Events
+                {filteredEvents.length} events
               </p>
             </div>
+            <p className="font-normal leading-[20px] not-italic text-[12px] text-zinc-400 tracking-[0.072px] whitespace-nowrap">
+              {syncLabel}
+            </p>
           </div>
           <div className="content-stretch flex gap-[12px] items-center relative shrink-0">
-            <div className="bg-zinc-50 border border-zinc-100 border-solid content-stretch flex items-center px-[20px] py-[16px] relative rounded-full shrink-0">
+            <div className="bg-zinc-50 border border-zinc-100 border-solid content-stretch flex gap-[8px] items-center px-[20px] py-[12px] relative rounded-full shrink-0">
               <div className="overflow-clip relative shrink-0 size-[16px]">
                 <div className="absolute inset-[12.5%]">
                   <div className="absolute inset-[-6.94%]">
@@ -526,85 +1186,445 @@ function AllEvents() {
                   </div>
                 </div>
               </div>
+              <input
+                className="bg-transparent border-none font-normal leading-none text-[14px] text-zinc-700 outline-none w-[220px]"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search events"
+                value={searchTerm}
+              />
             </div>
             <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-0 items-center p-[4px] relative rounded-full shrink-0">
-              <div className="bg-white content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 shadow-sm">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
-                  All
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Upcoming
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Ongoing
-                </p>
-              </div>
-              <div className="content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer">
-                <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-400 text-center whitespace-nowrap hover:text-zinc-600 transition-colors">
-                  Ended
-                </p>
-              </div>
+              {statusButtons.map((label) => {
+                const isActive = statusFilter === label;
+                return (
+                  <button
+                    className={`${isActive ? "bg-white shadow-sm text-zinc-800" : "text-zinc-400 hover:text-zinc-600"} content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer transition-colors`}
+                    key={label}
+                    onClick={() => setStatusFilter(label)}
+                    type="button"
+                  >
+                    <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-center whitespace-nowrap">
+                      {label}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
         <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
-            <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full">
-                <EventCard img={imgFrame47} state="Ongoing"/>
-                <EventCard img={imgFrame48} state="Upcoming"/>
-                <EventCard img={imgFrame49} state="Upcoming"/>
-                <EventCard img={imgFrame50} state="Upcoming"/>
-            </div>
+          {isLoading && events.length === 0 ? (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">Loading events...</p>
+          ) : null}
+          {error ? <p className="font-normal leading-[22px] not-italic text-[14px] text-red-500 tracking-[0.084px]">{error}</p> : null}
+          {!isLoading && visibleEvents.length === 0 ? (
+            <p className="font-normal leading-[22px] not-italic text-[14px] text-zinc-500 tracking-[0.084px]">No events found for this filter.</p>
+          ) : null}
+          <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+            {visibleEvents.map((event, index) => (
+              <EventCard
+                event={event}
+                fallbackImage={[imgFrame47, imgFrame48, imgFrame49, imgFrame50][index % 4]}
+                key={event.source_id}
+                onClick={onSelectEvent}
+              />
+            ))}
+          </div>
         </div>
-        <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
-            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors">
+        {hasMore ? (
+          <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
+            <button
+              className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors"
+              onClick={() => setVisibleCount((current) => current + 8)}
+              type="button"
+            >
               <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
-                Load 940 more
+                Load {Math.max(filteredEvents.length - visibleCount, 0)} more
               </p>
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function toEventPath(eventId) {
+  return `/event/${encodeURIComponent(eventId)}`;
+}
+
+function getEventIdFromPath(pathname) {
+  if (!pathname) {
+    return null;
+  }
+  const match = pathname.match(/^\/event\/([^/]+)$/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function NearbyEventCard({ event, onClick }) {
+  const ticketType = (event.ticket_type || "free").toLowerCase();
+  const ticketClass = ticketType === "paid" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700";
+
+  return (
+    <button
+      className="bg-white border border-zinc-100 content-stretch cursor-pointer flex gap-[10px] items-start p-[10px] relative rounded-[12px] shrink-0 text-left w-[288px]"
+      onClick={() => onClick(event)}
+      type="button"
+    >
+      <div className="h-[90px] overflow-clip relative rounded-[8px] shrink-0 w-[90px]">
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <div className="absolute bg-zinc-100 inset-0" />
+          <img alt={event.title} className="absolute inset-0 object-cover size-full" src={event.image_url || imgFrame49} />
+        </div>
+      </div>
+      <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-start min-h-px min-w-px relative">
+        <p className="font-semibold leading-none not-italic overflow-hidden relative shrink-0 text-[12px] text-zinc-800 text-ellipsis tracking-[-0.12px] w-full whitespace-nowrap">
+          {event.title}
+        </p>
+        <p className="font-normal leading-[16px] not-italic overflow-hidden relative shrink-0 text-[11px] text-zinc-500 tracking-[0.06px] w-full" style={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 2, display: "-webkit-box" }}>
+          {truncateText(event.description || event.long_description || "No description available", 70)}
+        </p>
+        <div className="content-stretch flex gap-[6px] items-center relative shrink-0">
+          <Status className="content-stretch flex items-start relative shrink-0" state={getEventStatus(event)} />
+          <p className="font-normal leading-[14px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.06px] whitespace-nowrap">
+            {formatEventDate(event.event_date)}
+          </p>
+        </div>
+        <div className={`${ticketClass} content-stretch flex gap-[4px] items-center px-[8px] py-[4px] relative rounded-full shrink-0`}>
+          <p className="font-medium leading-[14px] not-italic relative shrink-0 text-[10px] tracking-[0.06px] whitespace-nowrap">
+            {ticketType === "paid" ? "PAID" : "FREE"}
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function EventDetailPage({ event, events, onBack, onSelectEvent }) {
+  const [galleryIndex, setGalleryIndex] = React.useState(0);
+  const registrationUrl = getRegistrationUrl(event);
+  const mapUrl = getEventMapUrl(event);
+  const mapEmbedUrl = getEventMapEmbedUrl(event);
+  const hostImages = React.useMemo(() => getHostImageUrls(event), [event]);
+  const longText = event.long_description || event.description || "Details will be published soon.";
+  const descriptionBlocks = longText.split(/\n+/).filter(Boolean);
+  const speakers = (event.organizer_name || "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  const relatedEvents = React.useMemo(() => {
+    const sameArea = events.filter((item) => item.source_id !== event.source_id && (item.location === event.location || item.venue === event.venue));
+    if (sameArea.length >= 4) {
+      return sameArea.slice(0, 4);
+    }
+    const fallback = events.filter((item) => item.source_id !== event.source_id);
+    return [...sameArea, ...fallback].slice(0, 4);
+  }, [event, events]);
+
+  const galleryImages = [event.image_url || imgFrame49, event.image_url || imgFrame49, event.image_url || imgFrame49];
+
+  return (
+    <div className="content-stretch flex flex-col items-center pt-[66px] relative size-full">
+      <div className="content-stretch flex flex-col gap-[40px] items-start max-w-[1200px] pb-[80px] pt-[80px] w-full">
+        <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[8px] h-[42px] items-center justify-center px-[20px] py-[14px] relative rounded-full shrink-0" onClick={onBack} type="button">
+          <span className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">← Go back</span>
+        </button>
+
+        <div className="content-stretch flex gap-[20px] items-start relative shrink-0 w-full">
+          {galleryImages.map((image, index) => (
+            <button className={`overflow-clip relative rounded-[12px] shrink-0 size-[320px] ${index === galleryIndex ? "ring-2 ring-orange-500" : ""}`} key={`gallery-${index}`} onClick={() => setGalleryIndex(index)} type="button">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+                <div className="absolute bg-zinc-100 inset-0" />
+                <img alt={event.title} className="absolute inset-0 object-cover size-full" src={image} />
+              </div>
+              <SaveBtn className="absolute backdrop-blur-[6px] bg-[rgba(24,24,27,0.25)] bottom-[8px] content-stretch cursor-pointer flex items-center justify-center p-[8px] right-[8px] rounded-full" />
+            </button>
+          ))}
+        </div>
+
+        <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
+            <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+              <p className="font-semibold leading-none min-w-full not-italic overflow-hidden relative shrink-0 text-[48px] text-zinc-800 text-ellipsis tracking-[-0.5px] w-[min-content] whitespace-nowrap">
+                {event.title}
+              </p>
+              <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-full">
+                {hostImages.length > 0 ? (
+                  <div className="content-stretch flex gap-[2px] items-center relative shrink-0">
+                    {hostImages.map((imageUrl, index) => (
+                      <div className="bg-zinc-100 overflow-hidden rounded-full size-[24px]" key={`${imageUrl}-${index}`}>
+                        <img alt={event.organizer_name || "Host"} className="h-full w-full object-cover" src={imageUrl} />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                  Hosted by <span className="font-medium text-zinc-800">{event.organizer_name || "Unknown organizer"}</span>
+                </p>
+              </div>
             </div>
+            <div className="border-zinc-200 border-t border-solid h-0 relative shrink-0 w-full" />
+
+            <div className="content-stretch flex gap-[20px] items-start relative shrink-0 w-full">
+              <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-[320px]">
+                <div className="border border-zinc-200 border-solid content-stretch flex flex-col gap-[4px] items-start justify-center overflow-clip pb-[8px] relative rounded-[8px] shrink-0 w-[40px]">
+                  <div className="bg-zinc-200 content-stretch flex items-center justify-center px-[4px] py-[6px] relative shrink-0 w-full">
+                    <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[8px] text-zinc-500 text-center tracking-[0.048px] whitespace-nowrap">
+                      {formatMonthLabel(event.event_date)}
+                    </p>
+                  </div>
+                  <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 text-center tracking-[0.072px] w-full">
+                    {formatDayLabel(event.event_date)}
+                  </p>
+                </div>
+                <div className="content-stretch flex flex-[1_0_0] flex-col gap-[4px] items-start justify-center min-h-px min-w-px relative">
+                  <p className="font-medium leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                    {formatEventWeekdayDate(event.event_date)}
+                  </p>
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                    {formatEventTime(event.start_time, event.end_time)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="content-stretch flex flex-[1_0_0] gap-[10px] items-center min-h-px min-w-px relative">
+                <div className="bg-zinc-100 border border-zinc-200 border-solid content-stretch flex flex-col h-[39px] items-center justify-center overflow-clip relative rounded-[8px] shrink-0 w-[35px]">
+                  <div className="overflow-clip relative shrink-0 size-[16px]">
+                    <div className="absolute inset-[8.33%_16.67%]">
+                      <div className="absolute inset-[-5.71%_-7.14%]">
+                        <img alt="" className="block max-w-none size-full" src={imgVector3} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="content-stretch flex flex-col gap-[2px] items-start justify-center relative shrink-0">
+                  <p className="font-medium leading-[22px] not-italic overflow-hidden relative shrink-0 text-[14px] text-zinc-500 text-ellipsis tracking-[0.084px] whitespace-nowrap">
+                    {getEventLocation(event)}
+                  </p>
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[12px] text-zinc-500 tracking-[0.072px] whitespace-nowrap">
+                    {event.location || "Accra, Ghana"}
+                  </p>
+                </div>
+                {mapUrl ? (
+                  <a className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 whitespace-nowrap" href={mapUrl} rel="noreferrer" target="_blank">
+                    ↗
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex flex-col gap-[20px] items-start justify-center p-[20px] relative rounded-[12px] shrink-0 w-full">
+            <p className="font-semibold leading-[22px] not-italic relative shrink-0 text-[10px] text-zinc-500 tracking-[0.4px] uppercase whitespace-nowrap">
+              Registration details
+            </p>
+            <p className="font-normal leading-[24px] min-w-full not-italic relative shrink-0 text-[16px] text-zinc-500 tracking-[0.096px] w-[min-content]">
+              Join us for this exciting event! {event.ticket_type === "paid" ? "This is a paid event." : "It's completely free."} Don&apos;t miss out, secure your spot and grab your ticket.
+            </p>
+            {registrationUrl ? (
+              <a className="bg-orange-600 content-stretch flex gap-[10px] h-[42px] items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0" href={registrationUrl} rel="noreferrer" target="_blank">
+                <p className="font-semibold leading-none not-italic relative shrink-0 text-[14px] text-white text-center whitespace-nowrap">
+                  Register
+                </p>
+              </a>
+            ) : (
+              <div className="bg-zinc-200 content-stretch flex gap-[10px] h-[42px] items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0">
+                <p className="font-semibold leading-none not-italic relative shrink-0 text-[14px] text-zinc-600 text-center whitespace-nowrap">
+                  Registration unavailable
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+              About this event
+            </p>
+            <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+              {descriptionBlocks.slice(0, 5).map((line, index) => (
+                <p className="font-normal leading-[24px] min-w-full not-italic relative shrink-0 text-[16px] text-zinc-500 tracking-[0.096px] w-[min-content]" key={`desc-${index}`}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {mapUrl ? (
+            <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
+              <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+                Location
+              </p>
+              <a
+                aria-label={`Open ${getEventLocation(event)} in Google Maps`}
+                className="block overflow-hidden relative rounded-[12px] w-full"
+                href={mapUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {mapEmbedUrl ? (
+                  <iframe
+                    className="border border-zinc-200 h-[220px] pointer-events-none rounded-[12px] w-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={mapEmbedUrl}
+                    title="Event location map"
+                  />
+                ) : (
+                  <div className="bg-zinc-100 border border-zinc-200 content-stretch flex h-[220px] items-center justify-center rounded-[12px] w-full">
+                    <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">
+                      Open in Google Maps
+                    </p>
+                  </div>
+                )}
+                <div className="absolute bottom-[12px] right-[12px] bg-white/90 border border-zinc-200 px-[10px] py-[6px] rounded-full">
+                  <p className="font-medium leading-none not-italic text-[12px] text-zinc-700 whitespace-nowrap">Open in Google Maps</p>
+                </div>
+              </a>
+            </div>
+          ) : null}
+
+          <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full">
+            <p className="font-semibold leading-none not-italic relative shrink-0 text-[18px] text-zinc-800 tracking-[-0.18px] whitespace-nowrap">
+              Speakers
+            </p>
+            <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
+              {(speakers.length > 0 ? speakers : [event.organizer_name || "TBA"]).map((name) => (
+                <div className="content-stretch flex gap-[8px] items-center relative shrink-0" key={name}>
+                  <div className="bg-zinc-300 rounded-full size-[8px]" />
+                  <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-600 tracking-[0.084px] whitespace-nowrap">
+                    {name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-zinc-50 content-stretch flex flex-col items-center px-[10px] py-[80px] relative shrink-0 w-full">
+        <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-[1200px]">
+          <p className="font-semibold leading-none not-italic relative shrink-0 text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">
+            Events in the same area
+          </p>
+          <div className="content-stretch flex flex-wrap gap-[16px] items-start relative shrink-0 w-full">
+            {relatedEvents.map((item) => (
+              <NearbyEventCard event={item} key={item.source_id} onClick={onSelectEvent} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+function useSmoothScroll() {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    const raf = (time) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(raf);
+      lenis.destroy();
+    };
+  }, []);
+}
+
 export default function App() {
+  useSmoothScroll();
+  const { events, isLoading, error, lastSyncedAt } = useEventFeed();
+  const [activeEventId, setActiveEventId] = React.useState(() => (typeof window === "undefined" ? null : getEventIdFromPath(window.location.pathname)));
+  const { event: activeEvent, isLoading: isEventDetailLoading, error: eventDetailError } = useEventDetail(activeEventId, events);
+
+  const handleSelectEvent = React.useCallback((event) => {
+    if (!event?.source_id || typeof window === "undefined") {
+      return;
+    }
+
+    const nextPath = toEventPath(event.source_id);
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, "", nextPath);
+    }
+    window.scrollTo(0, 0);
+    setActiveEventId(event.source_id);
+  }, []);
+
+  const handleBackToHome = React.useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (window.location.pathname !== "/") {
+      window.history.pushState({}, "", "/");
+    }
+    window.scrollTo(0, 0);
+    setActiveEventId(null);
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handlePopState = () => {
+      setActiveEventId(getEventIdFromPath(window.location.pathname));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  if (activeEventId) {
     return (
-        <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
-            <Nav />
-            <HeroSection />
-            <TrendingEvents />
+      <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
+        <Nav />
+        {isEventDetailLoading && !activeEvent ? (
+          <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
+            <p className="font-normal leading-[22px] not-italic relative shrink-0 text-[14px] text-zinc-500 tracking-[0.084px] whitespace-nowrap">Loading event details...</p>
+          </div>
+        ) : null}
+        {activeEvent ? (
+          <>
+            <EventDetailPage event={activeEvent} events={events} onBack={handleBackToHome} onSelectEvent={handleSelectEvent} />
             <TechScene />
-            <Categories />
-            <AllEvents />
-            <Footer />
-        </div>
-    )
+          </>
+        ) : (
+          <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
+            <p className="font-semibold leading-none not-italic text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">Event not found</p>
+            {eventDetailError ? <p className="font-normal leading-[22px] mt-[8px] not-italic text-[14px] text-red-500 tracking-[0.084px] whitespace-nowrap">{eventDetailError}</p> : null}
+            <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[4px] h-[42px] items-center justify-center mt-[20px] px-[20px] py-[14px] relative rounded-full shrink-0" onClick={handleBackToHome} type="button">
+              <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">Go back</p>
+            </button>
+          </div>
+        )}
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white w-full min-h-screen font-['Inter_Display:Regular',sans-serif]">
+      <Nav />
+      <AppearSection><HeroSection /></AppearSection>
+      <AppearSection><TrendingEvents events={events} onSelectEvent={handleSelectEvent} /></AppearSection>
+      <TechScene />
+      <AppearSection><Categories /></AppearSection>
+      <AppearSection><AllEvents error={error} events={events} isLoading={isLoading} lastSyncedAt={lastSyncedAt} onSelectEvent={handleSelectEvent} /></AppearSection>
+      <AppearSection><Footer /></AppearSection>
+    </div>
+  );
 }
