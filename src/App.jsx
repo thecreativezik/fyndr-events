@@ -177,7 +177,7 @@ function HeroSection() {
                 Browse events
               </p>
             </div>
-            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0">
+            <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0 cursor-pointer transition-all duration-200 hover:bg-zinc-200 hover:scale-[1.03] active:scale-[0.97]">
               <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
                 List your event
               </p>
@@ -591,17 +591,17 @@ function Nav() {
           </p>
         </div>
         <div className="content-stretch flex flex-[1_0_0] gap-[20px] items-center justify-end min-h-px min-w-px relative">
-          <div className="content-stretch flex items-center justify-center py-[14px] relative shrink-0">
-            <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 text-center whitespace-nowrap">
+          <div className="content-stretch flex items-center justify-center py-[14px] relative shrink-0 cursor-pointer transition-all duration-200 hover:text-zinc-800">
+            <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 text-center whitespace-nowrap transition-colors duration-200 hover:text-zinc-800">
               Categories
             </p>
           </div>
-          <div className="content-stretch flex items-center justify-center py-[14px] relative shrink-0">
-            <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 text-center whitespace-nowrap">
+          <div className="content-stretch flex items-center justify-center py-[14px] relative shrink-0 cursor-pointer transition-all duration-200 hover:text-zinc-800">
+            <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-500 text-center whitespace-nowrap transition-colors duration-200 hover:text-zinc-800">
               List your event
             </p>
           </div>
-          <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0">
+          <div className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full shrink-0 cursor-pointer transition-all duration-200 hover:bg-zinc-200 hover:scale-[1.03] active:scale-[0.97]">
             <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">
               Sign in
             </p>
@@ -1198,7 +1198,7 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
                 const isActive = statusFilter === label;
                 return (
                   <button
-                    className={`${isActive ? "bg-white shadow-sm text-zinc-800" : "text-zinc-400 hover:text-zinc-600"} content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer transition-colors`}
+                    className={`${isActive ? "bg-white shadow-sm text-zinc-800" : "text-zinc-400 hover:text-zinc-600"} content-stretch flex items-center justify-center px-[24px] py-[12px] relative rounded-full shrink-0 cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]`}
                     key={label}
                     onClick={() => setStatusFilter(label)}
                     type="button"
@@ -1234,7 +1234,7 @@ function AllEvents({ events = [], isLoading = false, error = "", lastSyncedAt = 
         {hasMore ? (
           <div className="content-stretch flex justify-center w-full relative shrink-0 pt-[24px]">
             <button
-              className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-colors"
+              className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex items-center justify-center px-[28px] py-[14px] relative rounded-full cursor-pointer hover:bg-zinc-200 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
               onClick={() => setVisibleCount((current) => current + 8)}
               type="button"
             >
@@ -1327,7 +1327,7 @@ function EventDetailPage({ event, events, onBack, onSelectEvent }) {
   return (
     <div className="content-stretch flex flex-col items-center pt-[66px] relative size-full">
       <div className="content-stretch flex flex-col gap-[40px] items-start max-w-[1200px] pb-[80px] pt-[80px] w-full">
-        <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[8px] h-[42px] items-center justify-center px-[20px] py-[14px] relative rounded-full shrink-0" onClick={onBack} type="button">
+        <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[8px] h-[42px] items-center justify-center px-[20px] py-[14px] relative rounded-full shrink-0 transition-all duration-200 hover:bg-zinc-200 hover:scale-[1.03] active:scale-[0.97]" onClick={onBack} type="button">
           <span className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">← Go back</span>
         </button>
 
@@ -1606,7 +1606,7 @@ export default function App() {
           <div className="content-stretch flex flex-col items-center pt-[160px] pb-[120px]">
             <p className="font-semibold leading-none not-italic text-[24px] text-zinc-800 tracking-[-0.24px] whitespace-nowrap">Event not found</p>
             {eventDetailError ? <p className="font-normal leading-[22px] mt-[8px] not-italic text-[14px] text-red-500 tracking-[0.084px] whitespace-nowrap">{eventDetailError}</p> : null}
-            <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[4px] h-[42px] items-center justify-center mt-[20px] px-[20px] py-[14px] relative rounded-full shrink-0" onClick={handleBackToHome} type="button">
+            <button className="bg-zinc-100 border border-zinc-100 border-solid content-stretch flex gap-[4px] h-[42px] items-center justify-center mt-[20px] px-[20px] py-[14px] relative rounded-full shrink-0 transition-all duration-200 hover:bg-zinc-200 hover:scale-[1.03] active:scale-[0.97]" onClick={handleBackToHome} type="button">
               <p className="font-medium leading-none not-italic relative shrink-0 text-[14px] text-zinc-800 text-center whitespace-nowrap">Go back</p>
             </button>
           </div>
